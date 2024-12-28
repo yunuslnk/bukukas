@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Welcome to Bukukas, {{ username }}!</h2>
+    <p>You are logged in as <strong>{{ role }}</strong></p>
+    <p>Session Role: {{ session['role'] }}</p>
+
+    {% if role == 'admin' %}
+    <h3>Admin Dashboard</h3>
+    <p>Here you can manage users, view reports, and more.</p>
+    <p>Admin functionalities go here.</p>
+    <hr>
+    {% else %}
+    <h3>User Dashboard ini dashboard untuk user</h3>
+    <p>Welcome to your user dashboard. Here you can manage your data.</p>
+    <p>User functionalities go here.</p>
+    <hr>
+    {% endif %}
+</div>
+{% endblock %}
+

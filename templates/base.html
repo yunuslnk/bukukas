@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bukukas</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Sidebar styling */
+        #sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: -250px; /* Hidden by default */
+            background-color: #343a40;
+            padding-top: 20px;
+            transition: 0.3s;
+        }
+
+        #sidebar.active {
+            left: 0;
+        }
+
+        #sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #sidebar ul li {
+            padding: 10px;
+        }
+
+        #sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        #sidebar ul li a:hover {
+            background-color: #495057;
+        }
+
+        /* Main content when sidebar is active */
+        #content {
+            margin-left: 0;
+            transition: margin-left 0.3s;
+        }
+
+        #content.active {
+            margin-left: 250px; /* Adjust the content when sidebar is shown */
+        }
+
+        /* Toggle button */
+        #sidebar-toggle {
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: 20px;
+            color: white;
+        }
+
+        /* Adjust for navbar when sidebar is active */
+        .navbar-nav {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <span id="sidebar-toggle">&#9776;</span> 
+        <a class="navbar-brand" href="/">Bukukas</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                {% if session.get('role') == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/data">Data</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+
+    <div id="sidebar">
+        <ul>
+            <li><a href="/">Home</a></li>
+            {% if session.get('role') == 'admin' %}
+            <li><a href="/data">Data</a></li> <!-- Hanya ditampilkan jika user adalah admin -->
+            {% endif %}
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </div>    
+
+    <!-- <div id="sidebar">
+        <ul>
+            <li><a href="/">Home</a></li>
+            {% if role == 'admin' %}
+            <li><a href="/data">Data</a></li>
+            {% endif %}
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </div> -->
+
+    <!-- Main content -->
+    <div id="content">
+        <div class="container mt-5">
+            {% block content %}
+            <!-- Content from child templates will be injected here -->
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- JavaScript for sidebar toggle -->
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+        const toggleButton = document.getElementById('sidebar-toggle');
+
+        toggleButton.addEventListener('click', function() {
+            sidebar.classList.toggle('active');  // Toggle sidebar visibility
+            content.classList.toggle('active');  // Adjust content area accordingly
+        });
+    </script>
+</body>
+</html>
