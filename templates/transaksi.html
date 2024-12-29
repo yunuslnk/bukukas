@@ -1,9 +1,11 @@
-
 {% extends "base.html" %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Transaksi Pemasukan</h2>
+    <h2>Transaksi</h2>
+
+    <!-- Pemasukan Form -->
+    <h3>Tambah Transaksi Pemasukan</h3>
     <form action="/add_pemasukan" method="POST">
         <div class="form-group">
             <label for="amount">Jumlah Pemasukan:</label>
@@ -15,10 +17,11 @@
         </div>
         <button type="submit" class="btn btn-primary">Simpan Pemasukan</button>
     </form>
-    
+
     <hr>
-    
-    <h2>Transaksi Pengeluaran</h2>
+
+    <!-- Pengeluaran Form -->
+    <h3>Tambah Transaksi Pengeluaran</h3>
     <form action="/add_pengeluaran" method="POST">
         <div class="form-group">
             <label for="amount">Jumlah Pengeluaran:</label>
@@ -28,8 +31,51 @@
             <label for="description">Deskripsi:</label>
             <input type="text" class="form-control" id="description" name="description" required>
         </div>
-        <button type="submit" class="btn btn-danger">Simpan Pengeluaran</button>
+        <button type="submit" class="btn btn-primary">Simpan Pengeluaran</button>
     </form>
-</div>
 
+    <hr>
+
+    <!-- Display Pemasukan Data -->
+    <h3>Data Transaksi Pemasukan</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Jumlah Pemasukan</th>
+                <th>Deskripsi</th>
+                <th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pemasukan in pemasukan_data %}
+            <tr>
+                <td>{{ pemasukan[0] }}</td>
+                <td>{{ pemasukan[1] }}</td>
+                <td>{{ pemasukan[2] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Display Pengeluaran Data -->
+    <h3>Data Transaksi Pengeluaran</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Jumlah Pengeluaran</th>
+                <th>Deskripsi</th>
+                <th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pengeluaran in pengeluaran_data %}
+            <tr>
+                <td>{{ pengeluaran[0] }}</td>
+                <td>{{ pengeluaran[1] }}</td>
+                <td>{{ pengeluaran[2] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

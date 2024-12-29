@@ -7,14 +7,20 @@ import bcrypt
 app = Flask(__name__)
 app.secret_key = 'secret123'  # Encryption key for sessions
 
+#=======================================================================================================
 # Simulasi database user
+#=======================================================================================================
 users = {
     "admin": {"password": "adminpass", "role": "admin"},
     "user": {"password": "userpass", "role": "user"}
 }
 
 
+
+
+#=======================================================================================================
 # Route for login
+#=======================================================================================================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -40,9 +46,9 @@ def login():
 
     return render_template('login.html')
 
-
+#=======================================================================================================
 # Route for the main page (home)
-
+#=======================================================================================================
 @app.route('/')
 def home():
     if 'username' in session and 'role' in session:
@@ -60,7 +66,11 @@ def home():
 #     return redirect(url_for('login'))
 
 
+
+
+#=======================================================================================================
 # Route for logging out
+#=======================================================================================================
 @app.route('/logout')
 def logout():
     session.pop('username', None)
@@ -70,8 +80,9 @@ def logout():
     return redirect(url_for('login'))
 
 
-
+#=======================================================================================================
 # Route for showing data (only for admins)
+#=======================================================================================================
 @app.route('/data')
 def show_data():
     if 'role' in session and session['role'] == 'admin':  # Check if the user is an admin
@@ -85,14 +96,49 @@ def show_data():
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
 
+
+#=======================================================================================================
+# Route for adding new user (only for admins)
+#=======================================================================================================
+# @app.route('/transaksi')
+# def transaksi():
+#     if 'username' in session:
+#         return render_template('transaksi.html')
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
 @app.route('/transaksi')
 def transaksi():
     if 'username' in session:
-        return render_template('transaksi.html')
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Fetch income transactions (pemasukan)
+            cursor.execute('SELECT amount, description, created_at FROM pemasukan WHERE user_id = ?', (session['user_id'],))
+            pemasukan_data = cursor.fetchall()
+
+            # Fetch expense transactions (pengeluaran)
+            cursor.execute('SELECT amount, description, created_at FROM pengeluaran WHERE user_id = ?', (session['user_id'],))
+            pengeluaran_data = cursor.fetchall()
+
+            conn.close()
+
+            return render_template('transaksi.html', pemasukan_data=pemasukan_data, pengeluaran_data=pengeluaran_data)
+        except Exception as e:
+            flash(f'Error retrieving transactions: {e}', 'danger')
+            return redirect(url_for('home'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+
+
+#=======================================================================================================
+#route for adding new user (only for admins)
+#=======================================================================================================
 @app.route('/add_pemasukan', methods=['POST'])
 def add_pemasukan():
     if 'username' in session:
@@ -121,13 +167,47 @@ def add_pemasukan():
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+#=======================================================================================================
+# Route for adding new expense (only for admins)
+#=======================================================================================================
+# @app.route('/add_pengeluaran', methods=['POST'])
+# def add_pengeluaran():
+#     if 'username' in session:
+#         amount = request.form['amount']
+#         description = request.form['description']
+
+#         # Insert data into the pengeluaran table for any role
+#         try:
+#             conn = get_db_connection()  # Establish database connection using config.py
+#             if conn:
+#                 cursor = conn.cursor()
+#                 query = "INSERT INTO pengeluaran (amount, description, user_id) VALUES (?, ?, ?)"
+#                 user_id = session.get('user_id')  # Fetch user_id from session
+#                 cursor.execute(query, (amount, description, user_id))
+#                 conn.commit()
+#                 conn.close()
+
+#                 flash('Pengeluaran berhasil ditambahkan!', 'success')
+#             else:
+#                 flash('Database connection failed.', 'danger')
+#         except Exception as e:
+#             flash(f'Error saving expense: {e}', 'danger')
+
+#         return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+#=======================================================================================================
+#route for adding new expense (only for admins)
+#=======================================================================================================
 @app.route('/add_pengeluaran', methods=['POST'])
 def add_pengeluaran():
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
 
-        # Insert data into the pengeluaran table for any role
+        # Insert data into the pengeluaran table
         try:
             conn = get_db_connection()  # Establish database connection using config.py
             if conn:
@@ -142,13 +222,16 @@ def add_pengeluaran():
             else:
                 flash('Database connection failed.', 'danger')
         except Exception as e:
-            flash(f'Error saving expense: {e}', 'danger')
+            flash(f'Error saving transaction: {e}', 'danger')
 
         return redirect(url_for('transaksi'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+#=======================================================================================================
+#route for saldo
+#=======================================================================================================
 @app.route('/saldo')
 def saldo():
     if 'username' in session:
@@ -172,6 +255,8 @@ def saldo():
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
-
+#=======================================================================================================
+#route for register
+#=======================================================================================================
 if __name__ == '__main__':
     app.run(debug=True)  # Run Flask in debug mode
