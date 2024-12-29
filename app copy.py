@@ -31,7 +31,6 @@ def login():
         # If the user exists and the password matches
         if user and bcrypt.checkpw(password.encode('utf-8'), user[2].encode('utf-8')):  # Adjust column index if necessary
             session['username'] = username
-            session['user_id'] = user[0]
             session['role'] = user[4]  # Store role in session (e.g., 'admin' or 'user')
             flash('Login successful!', 'success')
             return redirect(url_for('home'))
@@ -65,7 +64,6 @@ def home():
 def logout():
     session.pop('username', None)
     session.pop('role', None)
-    session.pop('user_id', None)  # Remove user_id from session
     flash('You have been logged out.', 'info')
     return redirect(url_for('login'))
 
@@ -120,58 +118,6 @@ def add_pemasukan():
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
-
-@app.route('/add_pengeluaran', methods=['POST'])
-def add_pengeluaran():
-    if 'username' in session:
-        amount = request.form['amount']
-        description = request.form['description']
-
-        # Insert data into the pengeluaran table for any role
-        try:
-            conn = get_db_connection()  # Establish database connection using config.py
-            if conn:
-                cursor = conn.cursor()
-                query = "INSERT INTO pengeluaran (amount, description, user_id) VALUES (?, ?, ?)"
-                user_id = session.get('user_id')  # Fetch user_id from session
-                cursor.execute(query, (amount, description, user_id))
-                conn.commit()
-                conn.close()
-
-                flash('Pengeluaran berhasil ditambahkan!', 'success')
-            else:
-                flash('Database connection failed.', 'danger')
-        except Exception as e:
-            flash(f'Error saving expense: {e}', 'danger')
-
-        return redirect(url_for('transaksi'))
-    else:
-        flash('You need to login first!', 'danger')
-        return redirect(url_for('login'))
-
-@app.route('/saldo')
-def saldo():
-    if 'username' in session:
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT SUM(amount) FROM pemasukan WHERE user_id = ?', (session['user_id'],))
-            total_pemasukan = cursor.fetchone()[0] or 0
-
-            cursor.execute('SELECT SUM(amount) FROM pengeluaran WHERE user_id = ?', (session['user_id'],))
-            total_pengeluaran = cursor.fetchone()[0] or 0
-
-            saldo = total_pemasukan - total_pengeluaran
-            conn.close()
-
-            return render_template('saldo.html', saldo=saldo)
-        except Exception as e:
-            flash(f'Error calculating saldo: {e}', 'danger')
-            return redirect(url_for('home'))
-    else:
-        flash('You need to login first!', 'danger')
-        return redirect(url_for('login'))
-
 
 if __name__ == '__main__':
     app.run(debug=True)  # Run Flask in debug mode

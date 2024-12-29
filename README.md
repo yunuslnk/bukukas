@@ -92,4 +92,24 @@ SET
 WHERE [id] = 1;
 
 
+CREATE TABLE pemasukan (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    amount DECIMAL(18, 2) NOT NULL,
+    description NVARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 
+select * from pemasukan
+
+CREATE TABLE pengeluaran (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    amount DECIMAL(18, 2) NOT NULL,
+    description NVARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT GETDATE(),
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+select * from pengeluaran
