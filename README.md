@@ -113,3 +113,47 @@ CREATE TABLE pengeluaran (
 );
 
 select * from pengeluaran
+
+
+
+
+=========================================================
+Plugin
+=========================================================
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\core\jquery-3.7.1.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\core\popper.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\core\bootstrap.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\webfont\webfont.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\bootstrap-notify\bootstrap-notify.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\bootstrap-tagsinput\bootstrap-tagsinput.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\bootstrap-toggle\bootstrap-toggle.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\chart-circle\chart-circle.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\chart.js\chart.js.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\datatables\datatables.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\datepicker\datepicker.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\dropzone\dropzone.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\fullcalendar\fullcalendar.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\gmaps\gmaps.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\jquery-scrollbar\jquery-scrollbar.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\jquery.magnific-popup\jquery.magnific-popup.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\jquery.sparkline\jquery.sparkline.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\jquery.validate\jquery.validate.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\jsvectormap\jsvectormap.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\list.js\list.js.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\moment\moment.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\owl-carousel\owl-carousel.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\select2\select2.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\sortable\sortable.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\sticky-sidebar\sticky-sidebar.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\summernote\summernote.min.js"></script>
+    <script src="../static\kaiadmin-lite-1.2.0\assets\js\plugin\sweetalert\sweetalert.min.js"></script>
+
+
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\bootstrap.min.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\demo.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\fonts.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\fonts.min.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\kaiadmin.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\kaiadmin.min.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\plugins.css" rel="stylesheet">
+    <link href="../static\kaiadmin-lite-1.2.0\assets\css\plugins.min.css" rel="stylesheet">
