@@ -86,12 +86,13 @@ def logout():
 @app.route('/data')
 def show_data():
     if 'role' in session and session['role'] == 'admin':  # Check if the user is an admin
+        username = session['username']
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM users')  # Show all users data
         data = cursor.fetchall()
         conn.close()
-        return render_template('data.html', data=data)
+        return render_template('data.html', data=data, username=username)
     else:
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
@@ -99,8 +100,9 @@ def show_data():
 @app.route('/template')
 def show_template():
     if 'role' in session and session['role'] == 'admin':  # Check if the user is an admin
+        username = session['username']
         #title = "Halaman Template Admin"
-        return render_template('template.html')
+        return render_template('template.html', username=username)
     else:
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
