@@ -73,6 +73,12 @@
         .navbar-nav {
             margin-left: 20px;
         }
+        /* Sticky header */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000; /* Ensure the header is above other content */
+        }
     </style>
 </head>
 <body>
@@ -91,6 +97,13 @@
                     <a class="nav-link" href="/data">Data</a>
                 </li>
                 {% endif %}
+            </ul>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Hello, {{ username }}</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Logout</a>
                 </li>
