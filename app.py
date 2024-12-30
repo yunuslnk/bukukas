@@ -96,6 +96,16 @@ def show_data():
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
 
+@app.route('/template')
+def show_template():
+    if 'role' in session and session['role'] == 'admin':  # Check if the user is an admin
+        #title = "Halaman Template Admin"
+        return render_template('template.html')
+    else:
+        flash('You do not have permission to view this page!', 'danger')
+        return redirect(url_for('home'))
+    
+
 
 #=======================================================================================================
 # Route for adding new user (only for admins)
