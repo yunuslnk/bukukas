@@ -3,6 +3,11 @@ from config import get_db_connection  # Ensure you have a valid database connect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import bcrypt
+from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from io import BytesIO
+from flask import Response, send_file
 
 
 app = Flask(__name__)
@@ -150,6 +155,100 @@ def show_tables():
 #         flash('You need to login first!', 'danger')
 #         return redirect(url_for('login'))
 
+
+# Originalcode no date time
+# @app.route('/transaksi')
+# def transaksi():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Fetch income transactions (pemasukan)
+#             cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+#             pemasukan_data = cursor.fetchall()
+
+#             conn.close()
+
+#             return render_template('transaksi.html', pemasukan_data=pemasukan_data, username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+# New code with date time
+# @app.route('/transaksi')
+# def transaksi():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Fetch income transactions (pemasukan)
+#             cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+#             pemasukan_data = cursor.fetchall()
+
+#             # Format tanggal untuk hanya menampilkan hari, bulan, dan tahun
+#             formatted_pemasukan_data = []
+#             for pemasukan in pemasukan_data:
+#                 # Format 'created_at' menjadi 'YYYY-MM-DD'
+#                 # formatted_date = pemasukan[3].strftime('%Y-%m-%d')
+#                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+#                 # Tambahkan ke list dengan tanggal yang sudah diformat
+#                 formatted_pemasukan_data.append((pemasukan[0], pemasukan[1], pemasukan[2], formatted_date))
+
+#             conn.close()
+
+#             return render_template('transaksi.html', pemasukan_data=formatted_pemasukan_data, username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
+
+# penambahan format uang
+# @app.route('/transaksi')
+# def transaksi():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Fetch income transactions (pemasukan)
+#             cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+#             pemasukan_data = cursor.fetchall()
+
+#             # Format tanggal dan nominal amount
+#             formatted_pemasukan_data = []
+#             for pemasukan in pemasukan_data:
+#                 # Format 'created_at' menjadi 'DD-MM-YYYY'
+#                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+                
+#                 # Format amount dengan Rp dan separator ribuan tanpa dua digit di belakang
+#                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+                
+#                 # Tambahkan ke list dengan tanggal dan nominal yang sudah diformat
+#                 formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date))
+
+#             conn.close()
+
+#             return render_template('transaksi.html', pemasukan_data=formatted_pemasukan_data, username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+#file baru
 @app.route('/transaksi')
 def transaksi():
     if 'username' in session and session['role'] in ['admin', 'user']:
@@ -158,19 +257,45 @@ def transaksi():
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            # Fetch income transactions (pemasukan)
-            cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+            # Ambil tanggal awal dan akhir dari form
+            start_date = request.args.get('start_date', '')
+            end_date = request.args.get('end_date', '')
+
+            # Query dasar untuk mengambil transaksi pemasukan
+            query = 'SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?'
+            params = [session['user_id']]
+
+            # Jika tanggal awal dan akhir diisi, tambahkan kondisi filter ke query
+            if start_date and end_date:
+                query += ' AND created_at BETWEEN ? AND ?'
+                params.extend([start_date, end_date])
+
+            cursor.execute(query, params)
             pemasukan_data = cursor.fetchall()
+
+            # Format tanggal dan nominal amount
+            formatted_pemasukan_data = []
+            for pemasukan in pemasukan_data:
+                # Format 'created_at' menjadi 'DD-MM-YYYY'
+                formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+                
+                # Format amount dengan Rp dan separator ribuan tanpa dua digit di belakang
+                formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+                
+                # Tambahkan ke list dengan tanggal dan nominal yang sudah diformat
+                formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date))
 
             conn.close()
 
-            return render_template('transaksi.html', pemasukan_data=pemasukan_data, username=username)
+            return render_template('transaksi.html', pemasukan_data=formatted_pemasukan_data, username=username)
         except Exception as e:
             flash(f'Error retrieving transactions: {e}', 'danger')
             return redirect(url_for('home'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+
+
 
 
 #=======================================================================================================
@@ -404,6 +529,11 @@ def delete_tabungan_mandiri(id):
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+    
+
+
+
+
 #=======================================================================================================
 #route for register
 #=======================================================================================================
