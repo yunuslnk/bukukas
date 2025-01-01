@@ -157,3 +157,23 @@ Plugin
     <link href="../static\kaiadmin-lite-1.2.0\assets\css\kaiadmin.min.css" rel="stylesheet">
     <link href="../static\kaiadmin-lite-1.2.0\assets\css\plugins.css" rel="stylesheet">
     <link href="../static\kaiadmin-lite-1.2.0\assets\css\plugins.min.css" rel="stylesheet">
+
+
+
+
+@app.route('/transaksi')
+
+
+@app.route('/pemasukan')
+@app.route('/add_pemasukan', methods=['POST'])
+@app.route('/edit_pemasukan/<int:id>', methods=['GET'])
+@app.route('/update_pemasukan/<int:id>', methods=['POST'])
+
+
+
+
+@app.route('/tabungan_mandiri')
+@app.route('/add_tabungan_mandiri', methods=['POST'])
+@app.route('/edit_tabungan_mandiri/<int:id>', methods=['GET'])
+@app.route('/update_tabungan_mandiri/<int:id>', methods=['POST'])
+@app.route('/delete_tabungan_mandiri/<int:id>', methods=['POST'])

@@ -95,6 +95,10 @@
                 {% if session.get('role') == 'admin' %}
                 <li class="nav-item">
                     <a class="nav-link" href="/data">Data</a>
+                    <a class="nav-link" href="/transaksi">Transaksi</a>
+                    <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
+                    <a class="nav-link" href="/pemasukan">Pemasukan</a>
+                    <a class="nav-link" href="{{ url_for('transaksi') }}">Transaksi edit</a>
                     <a class="nav-link" href="/template">Template</a>
                 </li>
                 {% endif %}
@@ -122,6 +126,9 @@
             <li><a href="/template">Template</a></li>
             {% endif %}
             <li><a href="/transaksi">Transaksi</a></li> <!-- New Transaksi menu -->
+                        <li class="nav-item">
+                <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
+            </li>
             <li><a href="#">About</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="/logout">Logout</a></li>

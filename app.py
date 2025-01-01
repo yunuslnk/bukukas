@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from config import get_db_connection  # Ensure you have a valid database connection function in config.py
-
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 import bcrypt
 
 
 app = Flask(__name__)
 app.secret_key = 'secret123'  # Encryption key for sessions
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bukukas.db'  # Ganti dengan database Anda
+db = SQLAlchemy(app)
 #=======================================================================================================
 # Simulasi database user
 #=======================================================================================================
@@ -15,7 +17,16 @@ users = {
     "user": {"password": "userpass", "role": "user"}
 }
 
+# Model Pemasukan
+class Pemasukan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    amount = db.Column(db.Float, nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Fungsi untuk mendapatkan pemasukan berdasarkan ID
+def get_pemasukan_by_id(id):
+    return Pemasukan.query.get(id)
 
 
 #=======================================================================================================
@@ -59,15 +70,6 @@ def home():
         flash('Please log in first', 'warning')
         return redirect(url_for('login'))
 
-# @app.route('/')
-# def home():
-#     if 'username' in session:  # Check if user is logged in
-#         return render_template('home.html', role=session['role'])
-#     return redirect(url_for('login'))
-
-
-
-
 #=======================================================================================================
 # Route for logging out
 #=======================================================================================================
@@ -106,39 +108,52 @@ def show_template():
     else:
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
-    
-
 
 #=======================================================================================================
 # Route for adding new user (only for admins)
 #=======================================================================================================
+
 # @app.route('/transaksi')
 # def transaksi():
-#     if 'username' in session:
-#         return render_template('transaksi.html')
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Fetch income transactions (pemasukan)
+#             cursor.execute('SELECT amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+#             pemasukan_data = cursor.fetchall()
+
+#             # Fetch expense transactions (pengeluaran)
+#             cursor.execute('SELECT amount, description, created_at FROM pengeluaran WHERE user_id = ?', (session['user_id'],))
+#             pengeluaran_data = cursor.fetchall()
+
+#             conn.close()
+
+#             return render_template('transaksi.html', pemasukan_data=pemasukan_data, pengeluaran_data=pengeluaran_data, username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
 #     else:
 #         flash('You need to login first!', 'danger')
 #         return redirect(url_for('login'))
 
-
 @app.route('/transaksi')
 def transaksi():
-    if 'username' in session:
+    if 'username' in session and session['role'] in ['admin', 'user']:
         try:
+            username = session['username']
             conn = get_db_connection()
             cursor = conn.cursor()
 
             # Fetch income transactions (pemasukan)
-            cursor.execute('SELECT amount, description, created_at FROM pemasukan WHERE user_id = ?', (session['user_id'],))
+            cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
             pemasukan_data = cursor.fetchall()
-
-            # Fetch expense transactions (pengeluaran)
-            cursor.execute('SELECT amount, description, created_at FROM pengeluaran WHERE user_id = ?', (session['user_id'],))
-            pengeluaran_data = cursor.fetchall()
 
             conn.close()
 
-            return render_template('transaksi.html', pemasukan_data=pemasukan_data, pengeluaran_data=pengeluaran_data)
+            return render_template('transaksi.html', pemasukan_data=pemasukan_data, username=username)
         except Exception as e:
             flash(f'Error retrieving transactions: {e}', 'danger')
             return redirect(url_for('home'))
@@ -147,68 +162,106 @@ def transaksi():
         return redirect(url_for('login'))
 
 
-
 #=======================================================================================================
 #route for adding new user (only for admins)
 #=======================================================================================================
+@app.route('/pemasukan')
+def pemasukan():
+    if 'username' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+        pemasukan_data = cursor.fetchall()
+        conn.close()
+        return render_template('pemasukan.html', pemasukan_data=pemasukan_data)
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
 @app.route('/add_pemasukan', methods=['POST'])
 def add_pemasukan():
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
-
-        # Insert data into the pemasukan table for any role
         try:
-            conn = get_db_connection()  # Establish database connection using config.py
-            if conn:
-                cursor = conn.cursor()
-                query = "INSERT INTO pemasukan (amount, description, user_id) VALUES (?, ?, ?)"
-                user_id = session.get('user_id')  # Fetch user_id from session
-                cursor.execute(query, (amount, description, user_id))
-                conn.commit()
-                conn.close()
-                
-                flash('Pemasukan berhasil ditambahkan!', 'success')
-            else:
-                flash('Database connection failed.', 'danger')
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO pemasukan2 (amount, description, user_id, created_at)
+                VALUES (?, ?, ?, GETDATE())
+            """, (amount, description, session['user_id']))
+            conn.commit()
+            cursor.close()
+            flash('Pemasukan berhasil ditambahkan!', 'success')
         except Exception as e:
-            flash(f'Error saving transaction: {e}', 'danger')
-
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
         return redirect(url_for('transaksi'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
-#=======================================================================================================
-# Route for adding new expense (only for admins)
-#=======================================================================================================
-# @app.route('/add_pengeluaran', methods=['POST'])
-# def add_pengeluaran():
-#     if 'username' in session:
-#         amount = request.form['amount']
-#         description = request.form['description']
+@app.route('/edit_pemasukan/<int:id>', methods=['GET'])
+def edit_pemasukan(id):
+    if 'username' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, amount, description FROM pemasukan2 WHERE id = ?', (id,))
+        pemasukan = cursor.fetchone()
+        conn.close()
+        if pemasukan:
+            return render_template('edit_pemasukan.html', pemasukan=pemasukan)
+        else:
+            flash('Pemasukan not found!', 'danger')
+            return redirect(url_for('transaksi'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
 
-#         # Insert data into the pengeluaran table for any role
-#         try:
-#             conn = get_db_connection()  # Establish database connection using config.py
-#             if conn:
-#                 cursor = conn.cursor()
-#                 query = "INSERT INTO pengeluaran (amount, description, user_id) VALUES (?, ?, ?)"
-#                 user_id = session.get('user_id')  # Fetch user_id from session
-#                 cursor.execute(query, (amount, description, user_id))
-#                 conn.commit()
-#                 conn.close()
+@app.route('/update_pemasukan/<int:id>', methods=['POST'])
+def update_pemasukan(id):
+    if 'username' in session:
+        amount = request.form['amount']
+        description = request.form['description']
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE pemasukan2
+                SET amount = ?, description = ?
+                WHERE id = ?
+            """, (amount, description, id))
+            conn.commit()
+            cursor.close()
+            flash('Pemasukan updated successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('transaksi'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
 
-#                 flash('Pengeluaran berhasil ditambahkan!', 'success')
-#             else:
-#                 flash('Database connection failed.', 'danger')
-#         except Exception as e:
-#             flash(f'Error saving expense: {e}', 'danger')
-
-#         return redirect(url_for('transaksi'))
-#     else:
-#         flash('You need to login first!', 'danger')
-#         return redirect(url_for('login'))
+@app.route('/delete_pemasukan/<int:id>', methods=['POST'])
+def delete_pemasukan(id):
+    if 'username' in session:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM pemasukan2 WHERE id = ?', (id,))
+            conn.commit()
+            cursor.close()
+            flash('Pemasukan deleted successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('transaksi'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
 
 #=======================================================================================================
 #route for adding new expense (only for admins)
@@ -242,31 +295,104 @@ def add_pengeluaran():
         return redirect(url_for('login'))
 
 #=======================================================================================================
-#route for saldo
 #=======================================================================================================
-@app.route('/saldo')
-def saldo():
+@app.route('/tabungan_mandiri')
+def tabungan_mandiri():
     if 'username' in session:
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute('SELECT SUM(amount) FROM pemasukan WHERE user_id = ?', (session['user_id'],))
-            total_pemasukan = cursor.fetchone()[0] or 0
-
-            cursor.execute('SELECT SUM(amount) FROM pengeluaran WHERE user_id = ?', (session['user_id'],))
-            total_pengeluaran = cursor.fetchone()[0] or 0
-
-            saldo = total_pemasukan - total_pengeluaran
-            conn.close()
-
-            return render_template('saldo.html', saldo=saldo)
-        except Exception as e:
-            flash(f'Error calculating saldo: {e}', 'danger')
-            return redirect(url_for('home'))
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, amount, description, created_at FROM tabungan_mandiri WHERE user_id = ?', (session['user_id'],))
+        tabungan_data = cursor.fetchall()
+        conn.close()
+        return render_template('tabungan_mandiri.html', tabungan_data=tabungan_data)
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+@app.route('/add_tabungan_mandiri', methods=['POST'])
+def add_tabungan_mandiri():
+    if 'username' in session:
+        amount = request.form['amount']
+        description = request.form['description']
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO tabungan_mandiri (amount, description, user_id, created_at)
+                VALUES (?, ?, ?, GETDATE())
+            """, (amount, description, session['user_id']))
+            conn.commit()
+            cursor.close()
+            flash('Tabungan Mandiri berhasil ditambahkan!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('tabungan_mandiri'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/edit_tabungan_mandiri/<int:id>', methods=['GET'])
+def edit_tabungan_mandiri(id):
+    if 'username' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, amount, description FROM tabungan_mandiri WHERE id = ?', (id,))
+        tabungan = cursor.fetchone()
+        conn.close()
+        if tabungan:
+            return render_template('edit_tabungan_mandiri.html', tabungan=tabungan)
+        else:
+            flash('Tabungan Mandiri not found!', 'danger')
+            return redirect(url_for('tabungan_mandiri'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/update_tabungan_mandiri/<int:id>', methods=['POST'])
+def update_tabungan_mandiri(id):
+    if 'username' in session:
+        amount = request.form['amount']
+        description = request.form['description']
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE tabungan_mandiri
+                SET amount = ?, description = ?
+                WHERE id = ?
+            """, (amount, description, id))
+            conn.commit()
+            cursor.close()
+            flash('Tabungan Mandiri updated successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('tabungan_mandiri'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/delete_tabungan_mandiri/<int:id>', methods=['POST'])
+def delete_tabungan_mandiri(id):
+    if 'username' in session:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM tabungan_mandiri WHERE id = ?', (id,))
+            conn.commit()
+            cursor.close()
+            flash('Tabungan Mandiri deleted successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('tabungan_mandiri'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
 #=======================================================================================================
 #route for register
 #=======================================================================================================
