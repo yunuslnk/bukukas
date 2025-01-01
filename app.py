@@ -109,6 +109,17 @@ def show_template():
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
 
+@app.route('/tables')
+def show_tables():
+    if 'role' in session and session['role'] == 'admin':  # Check if the user is an admin
+        username = session['username']
+        #title = "Halaman Template Admin"
+        return render_template('tables.html', username=username)
+    else:
+        flash('You do not have permission to view this page!', 'danger')
+        return redirect(url_for('home'))
+
+
 #=======================================================================================================
 # Route for adding new user (only for admins)
 #=======================================================================================================
@@ -165,18 +176,18 @@ def transaksi():
 #=======================================================================================================
 #route for adding new user (only for admins)
 #=======================================================================================================
-@app.route('/pemasukan')
-def pemasukan():
-    if 'username' in session:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
-        pemasukan_data = cursor.fetchall()
-        conn.close()
-        return render_template('pemasukan.html', pemasukan_data=pemasukan_data)
-    else:
-        flash('You need to login first!', 'danger')
-        return redirect(url_for('login'))
+# @app.route('/pemasukan')
+# def pemasukan():
+#     if 'username' in session:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?', (session['user_id'],))
+#         pemasukan_data = cursor.fetchall()
+#         conn.close()
+#         return render_template('pemasukan.html', pemasukan_data=pemasukan_data)
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
 
 @app.route('/add_pemasukan', methods=['POST'])
 def add_pemasukan():

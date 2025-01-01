@@ -161,10 +161,8 @@ Plugin
 
 
 
+
 @app.route('/transaksi')
-
-
-@app.route('/pemasukan')
 @app.route('/add_pemasukan', methods=['POST'])
 @app.route('/edit_pemasukan/<int:id>', methods=['GET'])
 @app.route('/update_pemasukan/<int:id>', methods=['POST'])

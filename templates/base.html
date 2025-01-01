@@ -89,17 +89,16 @@
         <a class="navbar-brand" href="/">Bukukas</a>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link" href="/transaksi">Transaksi</a>
+                    <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
                 </li>
                 {% if session.get('role') == 'admin' %}
                 <li class="nav-item">
                     <a class="nav-link" href="/data">Data</a>
-                    <a class="nav-link" href="/transaksi">Transaksi</a>
-                    <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
-                    <a class="nav-link" href="/pemasukan">Pemasukan</a>
-                    <a class="nav-link" href="{{ url_for('transaksi') }}">Transaksi edit</a>
                     <a class="nav-link" href="/template">Template</a>
+                    <a class="nav-link" href="/tables">Tables</a>
                 </li>
                 {% endif %}
             </ul>
@@ -125,10 +124,8 @@
             <li><a href="/data">Data</a></li> <!-- Hanya ditampilkan jika user adalah admin -->
             <li><a href="/template">Template</a></li>
             {% endif %}
-            <li><a href="/transaksi">Transaksi</a></li> <!-- New Transaksi menu -->
-                        <li class="nav-item">
-                <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
-            </li>
+            <li><a href="/transaksi">Transaksi</a></li>
+            <li><a href="/tabungan_mandiri">Tabungan Mandiri</a></li> <!-- New Transaksi menu -->
             <li><a href="#">About</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="/logout">Logout</a></li>
