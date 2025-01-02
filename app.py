@@ -8,7 +8,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from io import BytesIO
 from flask import Response, send_file
-
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = 'secret123'  # Encryption key for sessions
@@ -249,7 +249,85 @@ def show_tables():
 #         return redirect(url_for('login'))
 
 #file baru
-@app.route('/transaksi')
+# @app.route('/transaksi')
+# def transaksi():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Ambil tanggal awal dan akhir dari form
+#             start_date = request.args.get('start_date', '')
+#             end_date = request.args.get('end_date', '')
+
+#             # Query dasar untuk mengambil transaksi pemasukan
+#             query = 'SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?'
+#             params = [session['user_id']]
+
+#             # Jika tanggal awal dan akhir diisi, tambahkan kondisi filter ke query
+#             if start_date and end_date:
+#                 query += ' AND created_at BETWEEN ? AND ?'
+#                 params.extend([start_date, end_date])
+
+#             cursor.execute(query, params)
+#             pemasukan_data = cursor.fetchall()
+
+#             # Format tanggal dan nominal amount
+#             formatted_pemasukan_data = []
+#             for pemasukan in pemasukan_data:
+#                 # Format 'created_at' menjadi 'DD-MM-YYYY'
+#                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+                
+#                 # Format amount dengan Rp dan separator ribuan tanpa dua digit di belakang
+#                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+                
+#                 # Tambahkan ke list dengan tanggal dan nominal yang sudah diformat
+#                 formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date))
+
+#             conn.close()
+
+#             return render_template('transaksi.html', pemasukan_data=formatted_pemasukan_data, username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+#bulan berjalan
+
+# @app.route('/transaksi', methods=['GET'])
+# def transaksi():
+#     if 'username' in session:
+#         # Default dates for the current month
+#         today = datetime.today()
+#         first_day_of_month = today.replace(day=1)
+#         last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+#         # Get dates from query parameters or use defaults
+#         start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+#         end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+        
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("""
+#             SELECT id, amount, description, created_at 
+#             FROM pemasukan2 
+#             WHERE created_at BETWEEN ? AND ? AND user_id = ?
+#             ORDER BY created_at DESC
+#         """, (start_date, end_date, session['user_id']))
+#         pemasukan_data = cursor.fetchall()
+#         cursor.close()
+#         conn.close()
+
+#         return render_template('transaksi.html', pemasukan_data=pemasukan_data, start_date=start_date, end_date=end_date)
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+#bulan berjalan = format uang
+@app.route('/transaksi', methods=['GET'])
 def transaksi():
     if 'username' in session and session['role'] in ['admin', 'user']:
         try:
@@ -257,9 +335,16 @@ def transaksi():
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            # Ambil tanggal awal dan akhir dari form
-            start_date = request.args.get('start_date', '')
-            end_date = request.args.get('end_date', '')
+            # Ambil tanggal hari ini
+            today = datetime.today()
+
+            # Default untuk bulan berjalan (tanggal awal dan akhir bulan)
+            first_day_of_month = today.replace(day=1)
+            last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+            # Ambil tanggal awal dan akhir dari query parameters atau gunakan default bulan berjalan
+            start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+            end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
 
             # Query dasar untuk mengambil transaksi pemasukan
             query = 'SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?'
@@ -278,24 +363,23 @@ def transaksi():
             for pemasukan in pemasukan_data:
                 # Format 'created_at' menjadi 'DD-MM-YYYY'
                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
-                
+
                 # Format amount dengan Rp dan separator ribuan tanpa dua digit di belakang
                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
-                
+
                 # Tambahkan ke list dengan tanggal dan nominal yang sudah diformat
                 formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date))
 
             conn.close()
 
-            return render_template('transaksi.html', pemasukan_data=formatted_pemasukan_data, username=username)
+            # Kirim data yang diformat dan tanggal default ke template
+            return render_template('transaksi.html', pemasukan_data=formatted_pemasukan_data, start_date=start_date, end_date=end_date, username=username)
         except Exception as e:
             flash(f'Error retrieving transactions: {e}', 'danger')
             return redirect(url_for('home'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
-
-
 
 
 #=======================================================================================================
@@ -314,11 +398,47 @@ def transaksi():
 #         flash('You need to login first!', 'danger')
 #         return redirect(url_for('login'))
 
+
+# original code
+# @app.route('/add_pemasukan', methods=['POST'])
+# def add_pemasukan():
+#     if 'username' in session:
+#         amount = request.form['amount']
+#         description = request.form['description']
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute("""
+#                 INSERT INTO pemasukan2 (amount, description, user_id, created_at)
+#                 VALUES (?, ?, ?, GETDATE())
+#             """, (amount, description, session['user_id']))
+#             conn.commit()
+#             cursor.close()
+#             flash('Pemasukan berhasil ditambahkan!', 'success')
+#         except Exception as e:
+#             flash(f'Error: {e}', 'danger')
+#         finally:
+#             conn.close()
+#         return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
+#buang 2 anka dibelakang koma
 @app.route('/add_pemasukan', methods=['POST'])
 def add_pemasukan():
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
+        
+        # Round the amount to 2 decimal places
+        try:
+            amount = round(float(amount), 2)
+        except ValueError:
+            flash('Invalid amount format!', 'danger')
+            return redirect(url_for('transaksi'))
+
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -338,6 +458,25 @@ def add_pemasukan():
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+#original code
+# @app.route('/edit_pemasukan/<int:id>', methods=['GET'])
+# def edit_pemasukan(id):
+#     if 'username' in session:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute('SELECT id, amount, description FROM pemasukan2 WHERE id = ?', (id,))
+#         pemasukan = cursor.fetchone()
+#         conn.close()
+#         if pemasukan:
+#             return render_template('edit_pemasukan.html', pemasukan=pemasukan)
+#         else:
+#             flash('Pemasukan not found!', 'danger')
+#             return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+    
+#buang 2 anka dibelakang koma
 @app.route('/edit_pemasukan/<int:id>', methods=['GET'])
 def edit_pemasukan(id):
     if 'username' in session:
@@ -346,8 +485,11 @@ def edit_pemasukan(id):
         cursor.execute('SELECT id, amount, description FROM pemasukan2 WHERE id = ?', (id,))
         pemasukan = cursor.fetchone()
         conn.close()
+        
         if pemasukan:
-            return render_template('edit_pemasukan.html', pemasukan=pemasukan)
+            # Format the amount to display as an integer (remove decimals)
+            formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2])
+            return render_template('edit_pemasukan.html', pemasukan=formatted_pemasukan)
         else:
             flash('Pemasukan not found!', 'danger')
             return redirect(url_for('transaksi'))
@@ -355,11 +497,48 @@ def edit_pemasukan(id):
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+
+
+#original code
+# @app.route('/update_pemasukan/<int:id>', methods=['POST'])
+# def update_pemasukan(id):
+#     if 'username' in session:
+#         amount = request.form['amount']
+#         description = request.form['description']
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute("""
+#                 UPDATE pemasukan2
+#                 SET amount = ?, description = ?
+#                 WHERE id = ?
+#             """, (amount, description, id))
+#             conn.commit()
+#             cursor.close()
+#             flash('Pemasukan updated successfully!', 'success')
+#         except Exception as e:
+#             flash(f'Error: {e}', 'danger')
+#         finally:
+#             conn.close()
+#         return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+#buang 2 anka dibelakang koma
 @app.route('/update_pemasukan/<int:id>', methods=['POST'])
 def update_pemasukan(id):
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
+
+        # Round the amount to 2 decimal places
+        try:
+            amount = round(float(amount), 2)
+        except ValueError:
+            flash('Invalid amount format!', 'danger')
+            return redirect(url_for('transaksi'))
+
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -379,6 +558,8 @@ def update_pemasukan(id):
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+
+
 
 @app.route('/delete_pemasukan/<int:id>', methods=['POST'])
 def delete_pemasukan(id):

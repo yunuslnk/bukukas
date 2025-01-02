@@ -175,3 +175,11 @@ Plugin
 @app.route('/edit_tabungan_mandiri/<int:id>', methods=['GET'])
 @app.route('/update_tabungan_mandiri/<int:id>', methods=['POST'])
 @app.route('/delete_tabungan_mandiri/<int:id>', methods=['POST'])
+
+
+
+
+
+
+- upload bukti transfer
+- sort by kolom
