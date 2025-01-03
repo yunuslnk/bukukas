@@ -46,6 +46,32 @@
                         </div>
                         <div class="col-md-3 align-self-end">
                             <button type="submit" class="btn btn-primary">Filter</button>
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample" id="toggleButton">
+                                Tampilkan Total
+                                </button>
+                            <div style="min-height: 30px;">
+                                <div class="collapse collapse-horizontal" id="collapseWidthExample">
+                                    <div class="card card-body" style="width: 500px;">
+                                        <h5>Total Jumlah Pemasukan: {{ total_pemasukan }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const toggleButton = document.getElementById('toggleButton');
+                                    const collapseElement = document.getElementById('collapseWidthExample');
+                            
+                                    collapseElement.addEventListener('show.bs.collapse', function () {
+                                        toggleButton.textContent = 'Sembunyikan Total';
+                                    });
+                            
+                                    collapseElement.addEventListener('hide.bs.collapse', function () {
+                                        toggleButton.textContent = 'Tampilkan Total';
+                                    });
+                                });
+                            </script>
                         </div>
                     </div>
                 </form>
