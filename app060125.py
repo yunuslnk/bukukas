@@ -9,33 +9,11 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 from flask import Response, send_file
 from datetime import datetime, timedelta
-import os
-from werkzeug.utils import secure_filename
-from flask import Flask
-
-
-
-
-# Helper function to check allowed file types
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-
 
 app = Flask(__name__)
 app.secret_key = 'secret123'  # Encryption key for sessions
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bukukas.db'  # Ganti dengan database Anda
 db = SQLAlchemy(app)
-
-# Set the folder for uploaded files
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
-
-
 #=======================================================================================================
 # Simulasi database user
 #=======================================================================================================
@@ -517,87 +495,32 @@ def transaksi():
 
 
 #buang 2 anka dibelakang koma
-# @app.route('/add_pemasukan', methods=['POST'])
-# def add_pemasukan():
-#     if 'username' in session:
-#         amount = request.form['amount']
-#         description = request.form['description']
-#         created_at = request.form['created_at']
-#         # Validate date format (assuming YYYY-MM-DD format for SQL Server)
-#         try:
-#             datetime.strptime(created_at, '%Y-%m-%d')  # Check if the date is valid
-#         except ValueError:
-#             flash('Invalid date format! Use YYYY-MM-DD.', 'danger')
-#             return redirect(url_for('transaksi'))
-#         # Round the amount to 2 decimal places
-#         try:
-#             amount = round(float(amount), 2)
-#         except ValueError:
-#             flash('Invalid amount format!', 'danger')
-#             return redirect(url_for('transaksi'))
-
-#         try:
-#             conn = get_db_connection()
-#             cursor = conn.cursor()
-#             cursor.execute("""
-#                 INSERT INTO pemasukan2 (amount, description, user_id, created_at)
-#                 VALUES (?, ?, ?, ?)
-#             """, (amount, description, session['user_id'], created_at))  # Pass the created_at date
-#             conn.commit()
-#             cursor.close()
-#             flash('Pemasukan berhasil ditambahkan!', 'success')
-#         except Exception as e:
-#             flash(f'Error: {e}', 'danger')
-#         finally:
-#             conn.close()
-#         return redirect(url_for('transaksi'))
-#     else:
-#         flash('You need to login first!', 'danger')
-#         return redirect(url_for('login'))
-
-#bisa upload gambar
-
 @app.route('/add_pemasukan', methods=['POST'])
 def add_pemasukan():
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
         created_at = request.form['created_at']
-
         # Validate date format (assuming YYYY-MM-DD format for SQL Server)
         try:
-            datetime.strptime(created_at, '%Y-%m-%d')
+            datetime.strptime(created_at, '%Y-%m-%d')  # Check if the date is valid
         except ValueError:
             flash('Invalid date format! Use YYYY-MM-DD.', 'danger')
             return redirect(url_for('transaksi'))
-
-        # Validate and round the amount
+        # Round the amount to 2 decimal places
         try:
             amount = round(float(amount), 2)
         except ValueError:
             flash('Invalid amount format!', 'danger')
             return redirect(url_for('transaksi'))
 
-        # Handle image upload (if provided)
-        file = request.files.get('bukti_transfer')
-        filename = None
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        elif file:
-            flash('Invalid file type! Only PNG, JPG, JPEG, and GIF are allowed.', 'danger')
-            return redirect(url_for('transaksi'))
-
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            
-            # Insert the income (pemasukan) data with image filename (if uploaded)
             cursor.execute("""
-                INSERT INTO pemasukan2 (amount, description, user_id, created_at, bukti_transfer)
-                VALUES (?, ?, ?, ?, ?)
-            """, (amount, description, session['user_id'], created_at, filename))
-            
+                INSERT INTO pemasukan2 (amount, description, user_id, created_at)
+                VALUES (?, ?, ?, ?)
+            """, (amount, description, session['user_id'], created_at))  # Pass the created_at date
             conn.commit()
             cursor.close()
             flash('Pemasukan berhasil ditambahkan!', 'success')
@@ -605,12 +528,10 @@ def add_pemasukan():
             flash(f'Error: {e}', 'danger')
         finally:
             conn.close()
-
         return redirect(url_for('transaksi'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
-
 
 #original code
 # @app.route('/edit_pemasukan/<int:id>', methods=['GET'])
@@ -800,6 +721,7 @@ def update_pemasukan(id):
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+
 
 
 

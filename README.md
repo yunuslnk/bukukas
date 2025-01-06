@@ -177,7 +177,9 @@ Plugin
 @app.route('/delete_tabungan_mandiri/<int:id>', methods=['POST'])
 
 
+Fold All: Untuk menyembunyikan semua blok kode sekaligus, tekan Ctrl + K, lalu Ctrl + 0.
 
+Unfold All: Untuk menampilkan kembali semua blok kode, tekan Ctrl + K, lalu Ctrl + J.
 
 
 
