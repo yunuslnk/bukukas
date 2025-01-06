@@ -86,37 +86,6 @@
                         </div>
                     </div>
                 </form>
-                <!-- <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample" id="toggleButton">
-                    Tampilkan Total
-                </button>
-                <div style="min-height: 30px;">
-                    <div class="collapse collapse-horizontal" id="collapseWidthExample">
-                        <div class="card card-body" style="width: 500px;">
-                            <h5>Total Jumlah Pemasukan: {{ total_pemasukan }}</h5>
-                        </div>
-                    </div>
-                </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const toggleButton = document.getElementById('toggleButton');
-                        const collapseElement = document.getElementById('collapseWidthExample');
-                
-                        collapseElement.addEventListener('show.bs.collapse', function () {
-                            toggleButton.textContent = 'Sembunyikan Total';
-                        });
-                
-                        collapseElement.addEventListener('hide.bs.collapse', function () {
-                            toggleButton.textContent = 'Tampilkan Total';
-                        });
-                    });
-                </script> -->
-                <!-- <div class="row">
-                    <div class="col-md-2">Kolom 1</div>
-                    <div class="col-md-2">Kolom 2</div>
-                    <div class="col-md-2">Kolom 3</div>
-                    <div class="col-md-2">Kolom 4</div>
-                    <div class="col-md-2">Kolom 5</div>
-                </div> -->
                 <!-- Pemasukan Table -->
                 <table class="table table-striped table-small">
                     <thead>
@@ -159,4 +128,179 @@
         </div>
     </div>
 </div>
+
+<div class="col-md-12">
+    <div class="card">
+        <div class="card-header">
+            <h4 class="card-title">Nav Pills Without Border (Horizontal Tabs)</h4>
+        </div>
+        <div class="card-body">
+            <ul class="nav nav-pills nav-secondary nav-pills-no-bd" id="pills-tab-without-border" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="pills-home-tab-nobd" data-bs-toggle="pill" href="#pills-home-nobd" role="tab" aria-controls="pills-home-nobd" aria-selected="true">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-profile-tab-nobd" data-bs-toggle="pill" href="#pills-profile-nobd" role="tab" aria-controls="pills-profile-nobd" aria-selected="false">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="pills-contact-tab-nobd" data-bs-toggle="pill" href="#pills-contact-nobd" role="tab" aria-controls="pills-contact-nobd" aria-selected="false">Contact</a>
+                </li>
+            </ul>
+            <div class="tab-content mt-2 mb-3" id="pills-without-border-tabContent">
+                <div class="tab-pane fade show active" id="pills-home-nobd" role="tabpanel" aria-labelledby="pills-home-tab-nobd">
+                    <p>Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.</p>
+                    
+                    
+                    
+
+
+
+                </div>
+                <div class="tab-pane fade" id="pills-profile-nobd" role="tabpanel" aria-labelledby="pills-profile-tab-nobd">
+                    <p>Even the all-powerful Pointing has no control about the blind texts it is an almost unorthographic life One day however a small line of blind text by the name of Lorem Ipsum decided to leave for the far World of Grammar.</p>
+
+                    <div class="accordion" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    <strong>Transaksi Pemasukan</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    <form action="/add_pemasukan" method="POST">
+                                        <div class="form-group">
+                                            <label for="amount">Jumlah Pemasukan:</label>
+                                            <input type="number" class="form-control" id="amount" name="amount" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="description">Deskripsi:</label>
+                                            <input type="text" class="form-control" id="description" name="description" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="created_at">Tanggal Pemasukan (YYYY-MM-DD):</label>
+                                            <input type="date" class="form-control" id="created_at" name="created_at" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {% if request.args.get('start_date') or request.args.get('end_date') %} {% else %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="{{ 'true' if request.args.get('start_date') or request.args.get('end_date') else 'false' }}" aria-controls="collapseTwo">
+                                    <strong>Daftar Pemasukan</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse {% if request.args.get('start_date') or request.args.get('end_date') %}show{% endif %}" data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    <!-- Filter Form -->
+                                    <form method="GET" action="{{ url_for('transaksi') }}">
+                                        <div class="row mb-2">
+                                            <div class="col-md-2">
+                                                <label for="start_date" class="form-label">Tanggal Awal</label>
+                                                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                                            </div>
+                                            
+                                            <div class="col-md-2">
+                                                <label for="end_date" class="form-label">Tanggal Akhir</label>
+                                                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                                            </div>
+                    
+                                            <!-- <div class="col-md-3 align-self-end"> -->
+                                            <div class="col-md-3 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-primary">Filter</button>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWidthExample" aria-expanded="false" aria-controls="collapseWidthExample" id="toggleButton">
+                                                    Tampilkan Total
+                                                </button>
+                                                <div style="min-height: 30px;">
+                                                    <div class="collapse collapse-horizontal" id="collapseWidthExample">
+                                                        <div class="card card-body" style="width: 300px;">
+                                                            <h6>Total: {{ total_pemasukan }}</h6>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <script>
+                                                    document.addEventListener('DOMContentLoaded', function () {
+                                                        const toggleButton = document.getElementById('toggleButton');
+                                                        const collapseElement = document.getElementById('collapseWidthExample');
+                                                
+                                                        collapseElement.addEventListener('show.bs.collapse', function () {
+                                                            toggleButton.textContent = 'Sembunyikan Total';
+                                                        });
+                                                
+                                                        collapseElement.addEventListener('hide.bs.collapse', function () {
+                                                            toggleButton.textContent = 'Tampilkan Total';
+                                                        });
+                                                    });
+                                                </script>
+                                            
+                                            </div>
+                                            <div>
+                                                
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <!-- Pemasukan Table -->
+                                    <table class="table table-striped table-small">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Jumlah Pemasukan</th>
+                                                <th>Deskripsi</th>
+                                                <th>Tanggal</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for pemasukan in pemasukan_data %}
+                                            <tr>
+                                                <td>{{ loop.index }}</td>
+                                                <td>{{ pemasukan[1] }}</td>
+                                                <td>{{ pemasukan[2] }}</td>
+                                                <td>{{ pemasukan[3] }}</td>
+                                                <td>
+                                                    <ul class="nav nav-tabs">
+                                                        <li class="nav-item dropdown">
+                                                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Action</a>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item" href="{{ url_for('edit_pemasukan', id=pemasukan[0]) }}">Edit</a></li>
+                                                                <li><hr class="dropdown-divider"></li>
+                                                                <li>
+                                                                    <form action="{{ url_for('delete_pemasukan', id=pemasukan[0]) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete()">
+                                                                        <button type="submit" class="dropdown-item">Delete</button>
+                                                                    </form>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+
+
+
+
+                </div>
+                <div class="tab-pane fade" id="pills-contact-nobd" role="tabpanel" aria-labelledby="pills-contact-tab-nobd">
+                    <p>Pityful a rethoric question ran over her cheek, then she continued her way. On her way she met a copy. The copy warned the Little Blind Text, that where it came from it would have been rewritten a thousand times and everything that was left from its origin would be the word "and" and the Little Blind Text should turn around and return to its own, safe country.</p>
+
+                    <p> But nothing the copy said could convince her and so it didn’t take long until a few insidious Copy Writers ambushed her, made her drunk with Longe and Parole and dragged her into their agency, where they abused her for their</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}
