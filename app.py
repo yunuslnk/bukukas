@@ -500,7 +500,13 @@ def add_pemasukan():
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
-        
+        created_at = request.form['created_at']
+        # Validate date format (assuming YYYY-MM-DD format for SQL Server)
+        try:
+            datetime.strptime(created_at, '%Y-%m-%d')  # Check if the date is valid
+        except ValueError:
+            flash('Invalid date format! Use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('transaksi'))
         # Round the amount to 2 decimal places
         try:
             amount = round(float(amount), 2)
@@ -513,8 +519,8 @@ def add_pemasukan():
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO pemasukan2 (amount, description, user_id, created_at)
-                VALUES (?, ?, ?, GETDATE())
-            """, (amount, description, session['user_id']))
+                VALUES (?, ?, ?, ?)
+            """, (amount, description, session['user_id'], created_at))  # Pass the created_at date
             conn.commit()
             cursor.close()
             flash('Pemasukan berhasil ditambahkan!', 'success')
@@ -546,22 +552,67 @@ def add_pemasukan():
 #         return redirect(url_for('login'))
     
 #buang 2 anka dibelakang koma
-@app.route('/edit_pemasukan/<int:id>', methods=['GET'])
+# @app.route('/edit_pemasukan/<int:id>', methods=['GET'])
+# def edit_pemasukan(id):
+#     if 'username' in session:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute('SELECT id, amount, description FROM pemasukan2 WHERE id = ?', (id,))
+#         pemasukan = cursor.fetchone()
+#         conn.close()
+        
+#         if pemasukan:
+#             # Format the amount to display as an integer (remove decimals)
+#             formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2])
+#             return render_template('edit_pemasukan.html', pemasukan=formatted_pemasukan)
+#         else:
+#             flash('Pemasukan not found!', 'danger')
+#             return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
+
+#bisa edit pemasukan
+@app.route('/edit_pemasukan/<int:id>', methods=['GET', 'POST'])
 def edit_pemasukan(id):
     if 'username' in session:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT id, amount, description FROM pemasukan2 WHERE id = ?', (id,))
-        pemasukan = cursor.fetchone()
-        conn.close()
-        
-        if pemasukan:
-            # Format the amount to display as an integer (remove decimals)
-            formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2])
-            return render_template('edit_pemasukan.html', pemasukan=formatted_pemasukan)
-        else:
-            flash('Pemasukan not found!', 'danger')
+
+        if request.method == 'POST':
+            # Ensure 'created_at' exists in the request form
+            if 'created_at' not in request.form:
+                flash('Tanggal pemasukan tidak tersedia!', 'danger')
+                return redirect(url_for('edit_pemasukan', id=id))
+
+            # Fetch the form data
+            amount = request.form['amount']
+            description = request.form['description']
+            created_at = request.form['created_at']  # Get the updated date
+
+            # Update the record
+            cursor.execute('UPDATE pemasukan2 SET amount = ?, description = ?, created_at = ? WHERE id = ?',
+                           (amount, description, created_at, id))
+            conn.commit()
+            conn.close()
+
+            flash('Pemasukan updated successfully!', 'success')
             return redirect(url_for('transaksi'))
+        else:
+            # If it's a GET request, display the existing data
+            cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE id = ?', (id,))
+            pemasukan = cursor.fetchone()
+            conn.close()
+
+            if pemasukan:
+                # Format the amount and date
+                formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2], pemasukan[3])
+                return render_template('edit_pemasukan.html', pemasukan=formatted_pemasukan)
+            else:
+                flash('Pemasukan not found!', 'danger')
+                return redirect(url_for('transaksi'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
@@ -595,11 +646,54 @@ def edit_pemasukan(id):
 #         return redirect(url_for('login'))
 
 #buang 2 anka dibelakang koma
+# @app.route('/update_pemasukan/<int:id>', methods=['POST'])
+# def update_pemasukan(id):
+#     if 'username' in session:
+#         amount = request.form['amount']
+#         description = request.form['description']
+
+#         # Round the amount to 2 decimal places
+#         try:
+#             amount = round(float(amount), 2)
+#         except ValueError:
+#             flash('Invalid amount format!', 'danger')
+#             return redirect(url_for('transaksi'))
+
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute("""
+#                 UPDATE pemasukan2
+#                 SET amount = ?, description = ?
+#                 WHERE id = ?
+#             """, (amount, description, id))
+#             conn.commit()
+#             cursor.close()
+#             flash('Pemasukan updated successfully!', 'success')
+#         except Exception as e:
+#             flash(f'Error: {e}', 'danger')
+#         finally:
+#             conn.close()
+#         return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
+#edit tanggal
 @app.route('/update_pemasukan/<int:id>', methods=['POST'])
 def update_pemasukan(id):
     if 'username' in session:
         amount = request.form['amount']
         description = request.form['description']
+        created_at = request.form['created_at']  # Get the date from the form
+
+        # Validate date format (assuming YYYY-MM-DD format for SQL Server)
+        try:
+            datetime.strptime(created_at, '%Y-%m-%d')  # Check if the date is valid
+        except ValueError:
+            flash('Invalid date format! Use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('transaksi'))
 
         # Round the amount to 2 decimal places
         try:
@@ -613,9 +707,9 @@ def update_pemasukan(id):
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE pemasukan2
-                SET amount = ?, description = ?
+                SET amount = ?, description = ?, created_at = ?
                 WHERE id = ?
-            """, (amount, description, id))
+            """, (amount, description, created_at, id))
             conn.commit()
             cursor.close()
             flash('Pemasukan updated successfully!', 'success')
@@ -627,6 +721,9 @@ def update_pemasukan(id):
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+
+
+
 
 
 

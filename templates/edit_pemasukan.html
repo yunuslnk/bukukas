@@ -2,8 +2,9 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Edit Pemasukan</h2>
-    <form action="{{ url_for('update_pemasukan', id=pemasukan[0]) }}" method="POST">
+    <h2>Edit Transaksi Pemasukan</h2>
+
+    <form action="{{ url_for('edit_pemasukan', id=pemasukan[0]) }}" method="POST">
         <div class="form-group">
             <label for="amount">Jumlah Pemasukan:</label>
             <input type="number" class="form-control" id="amount" name="amount" value="{{ pemasukan[1] }}" required>
@@ -11,6 +12,10 @@
         <div class="form-group">
             <label for="description">Deskripsi:</label>
             <input type="text" class="form-control" id="description" name="description" value="{{ pemasukan[2] }}" required>
+        </div>
+        <div class="form-group">
+            <label for="tanggal">Tanggal Pemasukan:</label>
+            <input type="date" class="form-control" id="created_at" name="created_at" value="{{ pemasukan[3] }}" required>
         </div>
         <button type="submit" class="btn btn-primary">Update Pemasukan</button>
     </form>
