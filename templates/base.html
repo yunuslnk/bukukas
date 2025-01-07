@@ -92,10 +92,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                     <a class="nav-link" href="/transaksi">Transaksi</a>
-                    <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
+                    
                 </li>
                 {% if session.get('role') == 'admin' %}
                 <li class="nav-item">
+                    <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
                     <a class="nav-link" href="/data">Data</a>
                     <a class="nav-link" href="/template">Template</a>
                     <a class="nav-link" href="/tables">Tables</a>
@@ -123,26 +124,14 @@
             {% if session.get('role') == 'admin' %}
             <li><a href="/data">Data</a></li> <!-- Hanya ditampilkan jika user adalah admin -->
             <li><a href="/template">Template</a></li>
+            <li><a href="/tabungan_mandiri">Tabungan Mandiri</a></li> <!-- New Transaksi menu -->
             {% endif %}
             <li><a href="/transaksi">Transaksi</a></li>
-            <li><a href="/tabungan_mandiri">Tabungan Mandiri</a></li> <!-- New Transaksi menu -->
             <li><a href="#">About</a></li>
             <li><a href="#">Contact</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
     </div>    
-
-    <!-- <div id="sidebar">
-        <ul>
-            <li><a href="/">Home</a></li>
-            {% if role == 'admin' %}
-            <li><a href="/data">Data</a></li>
-            {% endif %}
-            <li><a href="#">About</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="/logout">Logout</a></li>
-        </ul>
-    </div> -->
 
     <!-- Main content -->
     <div id="content">
