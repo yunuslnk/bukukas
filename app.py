@@ -425,7 +425,14 @@ def transaksi():
             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
 
             # Query dasar untuk mengambil transaksi pemasukan
-            query = 'SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?'
+            # query = 'SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?'
+            # params = [session['user_id']]
+
+            # Query untuk mengambil transaksi pemasukan termasuk bukti transfer
+            query = '''SELECT id, amount, description, created_at, bukti_transfer 
+                       FROM pemasukan2 
+                       WHERE user_id = ?'''
+
             params = [session['user_id']]
 
             # Jika tanggal awal dan akhir diisi, tambahkan kondisi filter ke query
@@ -449,7 +456,7 @@ def transaksi():
                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
 
                 # Tambahkan ke list dengan tanggal dan nominal yang sudah diformat
-                formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date))
+                formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date, pemasukan[4]))
 
             # Format total pemasukan
             formatted_total_pemasukan = f"Rp. {int(total_pemasukan):,}".replace(',', '.')
@@ -654,6 +661,50 @@ def add_pemasukan():
 
 
 #bisa edit pemasukan
+# @app.route('/edit_pemasukan/<int:id>', methods=['GET', 'POST'])
+# def edit_pemasukan(id):
+#     if 'username' in session:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+
+#         if request.method == 'POST':
+#             # Ensure 'created_at' exists in the request form
+#             if 'created_at' not in request.form:
+#                 flash('Tanggal pemasukan tidak tersedia!', 'danger')
+#                 return redirect(url_for('edit_pemasukan', id=id))
+
+#             # Fetch the form data
+#             amount = request.form['amount']
+#             description = request.form['description']
+#             created_at = request.form['created_at']  # Get the updated date
+
+#             # Update the record
+#             cursor.execute('UPDATE pemasukan2 SET amount = ?, description = ?, created_at = ? WHERE id = ?',
+#                            (amount, description, created_at, id))
+#             conn.commit()
+#             conn.close()
+
+#             flash('Pemasukan updated successfully!', 'success')
+#             return redirect(url_for('transaksi'))
+#         else:
+#             # If it's a GET request, display the existing data
+#             cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE id = ?', (id,))
+#             pemasukan = cursor.fetchone()
+#             conn.close()
+
+#             if pemasukan:
+#                 # Format the amount and date
+#                 formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2], pemasukan[3])
+#                 return render_template('edit_pemasukan.html', pemasukan=formatted_pemasukan)
+#             else:
+#                 flash('Pemasukan not found!', 'danger')
+#                 return redirect(url_for('transaksi'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
+#edit upload gambar
 @app.route('/edit_pemasukan/<int:id>', methods=['GET', 'POST'])
 def edit_pemasukan(id):
     if 'username' in session:
@@ -669,11 +720,27 @@ def edit_pemasukan(id):
             # Fetch the form data
             amount = request.form['amount']
             description = request.form['description']
-            created_at = request.form['created_at']  # Get the updated date
+            created_at = request.form['created_at']
 
-            # Update the record
-            cursor.execute('UPDATE pemasukan2 SET amount = ?, description = ?, created_at = ? WHERE id = ?',
-                           (amount, description, created_at, id))
+            # Handle file upload for 'bukti_transfer'
+            file = request.files.get('bukti_transfer')
+            bukti_transfer_filename = None
+
+            if file and allowed_file(file.filename):
+                # Secure the filename
+                filename = secure_filename(file.filename)
+                # Save the file to the uploads folder
+                file.save(os.path.join(UPLOAD_FOLDER, filename))
+                bukti_transfer_filename = filename  # Store the filename to update in DB
+
+            # Update the record, including the image if uploaded
+            if bukti_transfer_filename:
+                cursor.execute('UPDATE pemasukan2 SET amount = ?, description = ?, created_at = ?, bukti_transfer = ? WHERE id = ?',
+                               (amount, description, created_at, bukti_transfer_filename, id))
+            else:
+                cursor.execute('UPDATE pemasukan2 SET amount = ?, description = ?, created_at = ? WHERE id = ?',
+                               (amount, description, created_at, id))
+
             conn.commit()
             conn.close()
 
@@ -681,13 +748,13 @@ def edit_pemasukan(id):
             return redirect(url_for('transaksi'))
         else:
             # If it's a GET request, display the existing data
-            cursor.execute('SELECT id, amount, description, created_at FROM pemasukan2 WHERE id = ?', (id,))
+            cursor.execute('SELECT id, amount, description, created_at, bukti_transfer FROM pemasukan2 WHERE id = ?', (id,))
             pemasukan = cursor.fetchone()
             conn.close()
 
             if pemasukan:
                 # Format the amount and date
-                formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2], pemasukan[3])
+                formatted_pemasukan = (pemasukan[0], int(pemasukan[1]), pemasukan[2], pemasukan[3], pemasukan[4])
                 return render_template('edit_pemasukan.html', pemasukan=formatted_pemasukan)
             else:
                 flash('Pemasukan not found!', 'danger')
@@ -695,8 +762,6 @@ def edit_pemasukan(id):
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
-
-
 
 #original code
 # @app.route('/update_pemasukan/<int:id>', methods=['POST'])
