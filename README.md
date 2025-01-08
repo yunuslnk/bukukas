@@ -185,3 +185,106 @@ Unfold All: Untuk menampilkan kembali semua blok kode, tekan Ctrl + K, lalu Ctrl
 
 - upload bukti transfer
 - sort by kolom
+
+
+
+
+@app.route('/transaksi', methods=['GET'])
+def transaksi():
+    if 'username' in session and session['role'] in ['admin', 'user']:
+        try:
+            username = session['username']
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Get today's date
+            today = datetime.today()
+
+            # Default for current month (first and last day)
+            first_day_of_month = today.replace(day=1)
+            last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+            # Get start and end dates from query parameters or use defaults
+            start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+            end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+            
+        
+
+            # Fetch pemasukan (income) data
+            query_pemasukan = '''SELECT id, amount, description, created_at, bukti_transfer 
+                                 FROM pemasukan2 
+                                 WHERE user_id = ?'''
+            params_pemasukan = [session['user_id']]
+
+            if start_date and end_date:
+                query_pemasukan += ' AND created_at BETWEEN ? AND ?'
+                params_pemasukan.extend([start_date, end_date])
+
+            cursor.execute(query_pemasukan, params_pemasukan)
+            pemasukan_data = cursor.fetchall()
+
+            # Calculate total pemasukan
+            total_pemasukan = sum(pemasukan[1] for pemasukan in pemasukan_data)
+
+            # Format pemasukan data
+            formatted_pemasukan_data = []
+            for pemasukan in pemasukan_data:
+                formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+                formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+                formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date, pemasukan[4]))
+
+            # Fetch pengeluaran (expenses) data
+            query_pengeluaran = '''SELECT id, amount, description, created_at, bukti_transfer 
+                                   FROM pengeluaran2 
+                                   WHERE user_id = ?'''
+            params_pengeluaran = [session['user_id']]
+
+            if start_date and end_date:
+                query_pengeluaran += ' AND created_at BETWEEN ? AND ?'
+                params_pengeluaran.extend([start_date, end_date])
+
+            cursor.execute(query_pengeluaran, params_pengeluaran)
+            pengeluaran_data = cursor.fetchall()
+
+            # Calculate total pengeluaran
+            total_pengeluaran = sum(pengeluaran[1] for pengeluaran in pengeluaran_data)
+
+            # Format pengeluaran data
+            formatted_pengeluaran_data = []
+            for pengeluaran in pengeluaran_data:
+                formatted_date = pengeluaran[3].strftime('%d-%m-%Y')
+                formatted_amount = f"Rp. {int(pengeluaran[1]):,}".replace(',', '.')
+                formatted_pengeluaran_data.append((pengeluaran[0], formatted_amount, pengeluaran[2], formatted_date, pengeluaran[4]))
+
+            # Format total amounts
+            formatted_total_pemasukan = f"Rp. {int(total_pemasukan):,}".replace(',', '.')
+            formatted_total_pengeluaran = f"Rp. {int(total_pengeluaran):,}".replace(',', '.')
+
+            conn.close()
+
+            # Render both pemasukan and pengeluaran data in the template
+            return render_template('transaksi.html', 
+                                   pemasukan_data=formatted_pemasukan_data, 
+                                   total_pemasukan=formatted_total_pemasukan,
+                                   pengeluaran_data=formatted_pengeluaran_data, 
+                                   total_pengeluaran=formatted_total_pengeluaran,
+                                   start_date=start_date, 
+                                   end_date=end_date, 
+                                   username=username)
+        except Exception as e:
+            flash(f'Error retrieving transactions: {e}', 'danger')
+            return redirect(url_for('home'))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
+
+
+
+
+
+
+
+
+
+
