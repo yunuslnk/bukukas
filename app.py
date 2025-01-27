@@ -1,17 +1,24 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from config import get_db_connection  # Ensure you have a valid database connection function in config.py
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import bcrypt
-from datetime import datetime
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from io import BytesIO
-from flask import Response, send_file
-from datetime import datetime, timedelta
-import os
-from werkzeug.utils import secure_filename
-from flask import Flask
+from flask import Flask, render_template, request, redirect, url_for, flash, session    
+#Flask: Framework web untuk membangun aplikasi web. 
+#render_template: Merender HTML dengan data dinamis. 
+#request: Mengakses data dari permintaan HTTP.
+#redirect: Mengarahkan ke URL lain.
+#url_for: Menghasilkan URL dari nama fungsi.
+#flash: Menampilkan pesan singkat ke pengguna.
+#session: Menyimpan data sementara per sesi pengguna.
+from config import get_db_connection  # get_db_connection: Koneksi ke database (diambil dari config.py).
+from flask_sqlalchemy import SQLAlchemy # SQLAlchemy: ORM untuk interaksi database.
+#from datetime import datetime # datetime: Modul untuk bekerja dengan tanggal dan waktu.
+import bcrypt # bcrypt: Modul untuk mengenkripsi kata sandi.
+#from datetime import datetime # datetime: Modul untuk bekerja dengan tanggal dan waktu.
+from reportlab.lib.pagesizes import letter # letter: Ukuran halaman standar.
+from reportlab.pdfgen import canvas # canvas: Modul untuk membuat PDF.
+from io import BytesIO # BytesIO: Modul untuk bekerja dengan data biner.
+from flask import Response, send_file # Response: Merespons permintaan HTTP. send_file: Mengirim file ke pengguna.
+from datetime import datetime, timedelta # timedelta: Durasi waktu.
+import os # os: Modul untuk berinteraksi dengan sistem operasi.
+from werkzeug.utils import secure_filename # secure_filename: Mengamankan nama file.
+
 
 
 

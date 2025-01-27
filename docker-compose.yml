@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: bukukas_app
+    environment:
+      - SQL_SERVER=sqlserver
+      - SQL_DATABASE=bukukas
+      - SQL_USER=sa
+      - SQL_PASSWORD=P@ssw0rd
+      - SQL_DRIVER={ODBC Driver 17 for SQL Server}
+    ports:
+      - "5000:5000"  # Assuming your Flask app runs on port 5000
+    depends_on:
+      - sqlserver
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: sqlserver
+    environment:
+      - SA_PASSWORD=P@ssw0rd
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"  # Expose SQL Server to the host machine
+
+volumes:
+  sql_data:

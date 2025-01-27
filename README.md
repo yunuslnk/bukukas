@@ -284,7 +284,12 @@ def transaksi():
 
 
 
+Runnig in docker=====================
 
+1. docker build -t bukukas_app .
 
+2. docker run -p 5000:5000 bukukas_app
+
+3. docker-compose up --build
 
 
