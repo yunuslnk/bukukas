@@ -89,27 +89,37 @@
         <a class="navbar-brand" href="/">Bukukas</a>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
+
+                <li class="nav-item dropdown">
                     <a class="nav-link" href="/">Home</a>
-                    <a class="nav-link" href="/transaksi">Transaksi</a>
-                    
+                    <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        Transaksi
+                    </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="/transaksipemasukan">Pemasukan</a></li>
+                            <li><a class="dropdown-item" href="/transaksipengeluaran">Pengeluaran</a></li>
+                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                        </ul>
                 </li>
-                {% if session.get('role') == 'admin' %}
-                <li class="nav-item">
+                
+                <li class="nav-item dropdown">
+                    {% if session.get('role') == 'admin' %}
+                
                     <a class="nav-link" href="/tabungan_mandiri">Tabungan Mandiri</a>
                     <a class="nav-link" href="/data">Data</a>
                     <a class="nav-link" href="/template">Template</a>
                     <a class="nav-link" href="/tables">Tables</a>
+                    
+                    {% endif %}
                 </li>
-                {% endif %}
             </ul>
         </div>
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
+                <li class="nav-item dropdown">
                     <a class="nav-link" href="#">Hello, {{ username }}</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item dropdown">
                     <a class="nav-link" href="/logout">Logout</a>
                 </li>
             </ul>
