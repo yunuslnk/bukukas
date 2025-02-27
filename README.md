@@ -293,3 +293,29 @@ Runnig in docker=====================
 3. docker-compose up --build
 
 
+
+
+=======================
+run app in background
+=======================
+
+F:\PROJECT\Python\bukukas>.\env\Scripts\activate
+
+(env) F:\PROJECT\Python\bukukas>start /B python app.py
+
+http://127.0.0.1:5000
+
+
+
+
+
+didalam bukukas
+
+- aset
+- pemasukan pengeluaran
+- hutang
+- cicilan
+- rutinitas
+
+
+

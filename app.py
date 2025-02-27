@@ -27,13 +27,15 @@ from werkzeug.utils import secure_filename # secure_filename: Mengamankan nama f
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+#allowed_file(filename) memeriksa apakah nama file yang diberikan memiliki ekstensi yang diizinkan.
 
 
 app = Flask(__name__)
 app.secret_key = 'secret123'  # Encryption key for sessions
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bukukas.db'  # Ganti dengan database Anda
 db = SQLAlchemy(app)
+
+
 
 # Set the folder for uploaded files
 UPLOAD_FOLDER = 'static/uploads'
