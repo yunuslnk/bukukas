@@ -311,7 +311,7 @@ http://127.0.0.1:5000
 
 didalam bukukas
 
-- aset
+- aset Ok
     - Asset ID: Identifier unik untuk setiap aset.
     - Asset Name: Nama atau deskripsi aset.
     - Category: Kategori atau jenis aset (misalnya, properti, kendaraan, peralatan).
@@ -322,10 +322,15 @@ didalam bukukas
 
 
 
-- pemasukan pengeluaran
+- pemasukan pengeluaran Ok 
+
 - hutang
+
 - cicilan
+
 - rutinitas
+
+
 
 
 
