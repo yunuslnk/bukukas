@@ -1,7 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session    
+#Flask: Framework web untuk membangun aplikasi web. 
+#render_template: Merender HTML dengan data dinamis. 
+#request: Mengakses data dari permintaan HTTP.
+#redirect: Mengarahkan ke URL lain.
+#url_for: Menghasilkan URL dari nama fungsi.
+#flash: Menampilkan pesan singkat ke pengguna.
+#session: Menyimpan data sementara per sesi pengguna.
 from config import get_db_connection  # get_db_connection: Koneksi ke database (diambil dari config.py).
 from flask_sqlalchemy import SQLAlchemy # SQLAlchemy: ORM untuk interaksi database.
+#from datetime import datetime # datetime: Modul untuk bekerja dengan tanggal dan waktu.
 import bcrypt # bcrypt: Modul untuk mengenkripsi kata sandi.
+#from datetime import datetime # datetime: Modul untuk bekerja dengan tanggal dan waktu.
 from reportlab.lib.pagesizes import letter # letter: Ukuran halaman standar.
 from reportlab.pdfgen import canvas # canvas: Modul untuk membuat PDF.
 from io import BytesIO # BytesIO: Modul untuk bekerja dengan data biner.
@@ -9,10 +18,9 @@ from flask import Response, send_file # Response: Merespons permintaan HTTP. sen
 from datetime import datetime, timedelta # timedelta: Durasi waktu.
 import os # os: Modul untuk berinteraksi dengan sistem operasi.
 from werkzeug.utils import secure_filename # secure_filename: Mengamankan nama file.
-from template import show_template  # Impor fungsi dari file template.py
 from aset import aset
-from aset import allowed_file
-from aset import add_aset
+from template import show_template  # Impor fungsi dari file template.py
+
 
 
 # Helper function to check allowed file types
@@ -26,10 +34,8 @@ app = Flask(__name__)
 app.secret_key = 'secret123'  # Encryption key for sessions
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bukukas.db'  # Ganti dengan database Anda
 db = SQLAlchemy(app)
-# Route 
+# Route untuk halaman template
 app.add_url_rule('/template', 'show_template', show_template)
-app.add_url_rule('/aset', 'aset', aset, methods=['GET'])
-app.add_url_rule('/add_aset', 'add_aset', add_aset, methods=['POST'])
 
 
 
@@ -38,6 +44,9 @@ UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+
+
+
 #=======================================================================================================
 # Simulasi database user
 #=======================================================================================================
@@ -45,6 +54,17 @@ users = {
     "admin": {"password": "adminpass", "role": "admin"},
     "user": {"password": "userpass", "role": "user"}
 }
+
+# Model Pemasukan
+# class Pemasukan(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     amount = db.Column(db.Float, nullable=False)
+#     description = db.Column(db.String(255), nullable=False)
+#     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Fungsi untuk mendapatkan pemasukan berdasarkan ID
+# def get_pemasukan_by_id(id):
+#     return Pemasukan.query.get(id)
 
 
 #=======================================================================================================
@@ -128,6 +148,244 @@ def show_tables():
         flash('You do not have permission to view this page!', 'danger')
         return redirect(url_for('home'))
 
+
+#=======================================================================================================
+# Route for adding new user (only for admins)
+#=======================================================================================================
+
+
+
+#total pemasukan
+# @app.route('/transaksi', methods=['GET'])
+# def transaksi():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+        
+
+#             # Ambil tanggal hari ini
+#             today = datetime.today()
+
+#             # Default untuk bulan berjalan (tanggal awal dan akhir bulan)
+#             first_day_of_month = today.replace(day=1)
+#             last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+#             # Ambil tanggal awal dan akhir dari query parameters atau gunakan default bulan berjalan
+#             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+#             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+
+#             # Query dasar untuk mengambil transaksi pemasukan
+#             # query = 'SELECT id, amount, description, created_at FROM pemasukan2 WHERE user_id = ?'
+#             # params = [session['user_id']]
+
+#             # Query untuk mengambil transaksi pemasukan termasuk bukti transfer
+#             query = '''SELECT id, amount, description, created_at, bukti_transfer 
+#                        FROM pemasukan2 
+#                        WHERE user_id = ?'''
+
+#             params = [session['user_id']]
+
+#             # Jika tanggal awal dan akhir diisi, tambahkan kondisi filter ke query
+#             if start_date and end_date:
+#                 query += ' AND created_at BETWEEN ? AND ?'
+#                 params.extend([start_date, end_date])
+
+#             cursor.execute(query, params)
+#             pemasukan_data = cursor.fetchall()
+
+#             # Hitung total jumlah pemasukan
+#             total_pemasukan = sum(pemasukan[1] for pemasukan in pemasukan_data)
+
+#             # Format tanggal dan nominal amount
+#             formatted_pemasukan_data = []
+#             for pemasukan in pemasukan_data:
+#                 # Format 'created_at' menjadi 'DD-MM-YYYY'
+#                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+
+#                 # Format amount dengan Rp dan separator ribuan tanpa dua digit di belakang
+#                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+
+#                 # Tambahkan ke list dengan tanggal dan nominal yang sudah diformat
+#                 formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date, pemasukan[4]))
+
+#             # Format total pemasukan
+#             formatted_total_pemasukan = f"Rp. {int(total_pemasukan):,}".replace(',', '.')
+
+#             conn.close()
+
+#             # Kirim data yang diformat, total pemasukan, dan tanggal default ke template
+#             return render_template('transaksi.html', 
+#                                    pemasukan_data=formatted_pemasukan_data, 
+#                                    total_pemasukan=formatted_total_pemasukan, 
+#                                    start_date=start_date, 
+#                                    end_date=end_date, 
+#                                    username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+# Original code for the /transaksi route
+# @app.route('/transaksi', methods=['GET'])
+# def transaksi():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Get today's date
+#             today = datetime.today()
+
+#             # Default for current month (first and last day)
+#             first_day_of_month = today.replace(day=1)
+#             last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+#             # Get start and end dates from query parameters or use defaults
+#             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+#             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+            
+        
+
+#             # Fetch pemasukan (income) data
+#             query_pemasukan = '''SELECT id, amount, description, created_at, bukti_transfer 
+#                                  FROM pemasukan2 
+#                                  WHERE user_id = ?'''
+#             params_pemasukan = [session['user_id']]
+
+#             if start_date and end_date:
+#                 query_pemasukan += ' AND created_at BETWEEN ? AND ?'
+#                 params_pemasukan.extend([start_date, end_date])
+
+#             cursor.execute(query_pemasukan, params_pemasukan)
+#             pemasukan_data = cursor.fetchall()
+
+#             # Calculate total pemasukan
+#             total_pemasukan = sum(pemasukan[1] for pemasukan in pemasukan_data)
+
+#             # Format pemasukan data
+#             formatted_pemasukan_data = []
+#             for pemasukan in pemasukan_data:
+#                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+#                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+#                 formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date, pemasukan[4]))
+
+#             # Fetch pengeluaran (expenses) data
+#             query_pengeluaran = '''SELECT id, amount, description, created_at, bukti_transfer 
+#                                    FROM pengeluaran2 
+#                                    WHERE user_id = ?'''
+#             params_pengeluaran = [session['user_id']]
+
+#             if start_date and end_date:
+#                 query_pengeluaran += ' AND created_at BETWEEN ? AND ?'
+#                 params_pengeluaran.extend([start_date, end_date])
+
+#             cursor.execute(query_pengeluaran, params_pengeluaran)
+#             pengeluaran_data = cursor.fetchall()
+
+#             # Calculate total pengeluaran
+#             total_pengeluaran = sum(pengeluaran[1] for pengeluaran in pengeluaran_data)
+
+#             # Format pengeluaran data
+#             formatted_pengeluaran_data = []
+#             for pengeluaran in pengeluaran_data:
+#                 formatted_date = pengeluaran[3].strftime('%d-%m-%Y')
+#                 formatted_amount = f"Rp. {int(pengeluaran[1]):,}".replace(',', '.')
+#                 formatted_pengeluaran_data.append((pengeluaran[0], formatted_amount, pengeluaran[2], formatted_date, pengeluaran[4]))
+
+#             # Format total amounts
+#             formatted_total_pemasukan = f"Rp. {int(total_pemasukan):,}".replace(',', '.')
+#             formatted_total_pengeluaran = f"Rp. {int(total_pengeluaran):,}".replace(',', '.')
+
+#             conn.close()
+
+#             # Render both pemasukan and pengeluaran data in the template
+#             return render_template('transaksi.html', 
+#                                    pemasukan_data=formatted_pemasukan_data, 
+#                                    total_pemasukan=formatted_total_pemasukan,
+#                                    pengeluaran_data=formatted_pengeluaran_data, 
+#                                    total_pengeluaran=formatted_total_pengeluaran,
+#                                    start_date=start_date, 
+#                                    end_date=end_date, 
+#                                    username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
+# Transaksi Pemasukan
+# @app.route('/transaksipemasukan', methods=['GET'])
+# def transaksipemasukan():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Get today's date
+#             today = datetime.today()
+
+#             # Default for current month (first and last day)
+#             first_day_of_month = today.replace(day=1)
+#             last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+#             # Get start and end dates from query parameters or use defaults
+#             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+#             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+            
+        
+
+#             # Fetch pemasukan (income) data
+#             query_pemasukan = '''SELECT id, amount, description, created_at, bukti_transfer 
+#                                  FROM pemasukan2 
+#                                  WHERE user_id = ?'''
+#             params_pemasukan = [session['user_id']]
+
+#             if start_date and end_date:
+#                 query_pemasukan += ' AND created_at BETWEEN ? AND ?'
+#                 params_pemasukan.extend([start_date, end_date])
+
+#             cursor.execute(query_pemasukan, params_pemasukan)
+#             pemasukan_data = cursor.fetchall()
+
+#             # Calculate total pemasukan
+#             total_pemasukan = sum(pemasukan[1] for pemasukan in pemasukan_data)
+
+#             # Format pemasukan data
+#             formatted_pemasukan_data = []
+#             for pemasukan in pemasukan_data:
+#                 formatted_date = pemasukan[3].strftime('%d-%m-%Y')
+#                 formatted_amount = f"Rp. {int(pemasukan[1]):,}".replace(',', '.')
+#                 formatted_pemasukan_data.append((pemasukan[0], formatted_amount, pemasukan[2], formatted_date, pemasukan[4]))
+
+            
+#             # Format total amounts
+#             formatted_total_pemasukan = f"Rp. {int(total_pemasukan):,}".replace(',', '.')
+
+#             conn.close()
+
+#             # Render both pemasukan and pengeluaran data in the template
+#             return render_template('transaksi_pemasukan.html', 
+#                                    pemasukan_data=formatted_pemasukan_data, 
+#                                    total_pemasukan=formatted_total_pemasukan,
+#                                    start_date=start_date, 
+#                                    end_date=end_date, 
+#                                    username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+
 # Transaksi Pemasukan
 @app.route('/transaksipemasukan', methods=['GET'])
 def transaksipemasukan():
@@ -192,73 +450,6 @@ def transaksipemasukan():
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
-
-
-
-# Transaksi Aset v2
-# @app.route('/aset', methods=['GET'])
-# def aset():
-#     if 'username' in session and session['role'] in ['admin', 'user']:
-#         try:
-#             username = session['username']
-#             conn = get_db_connection()
-#             cursor = conn.cursor()
-
-#             # Get today's date
-#             today = datetime.today()
-
-#             # Default for current month (first and last day)
-#             first_day_of_month = today.replace(day=1)
-#             last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-
-#             # Get start and end dates from query parameters or use defaults
-#             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
-#             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
-            
-        
-
-#             # Fetch Aset data
-#             query_aset = '''SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image 
-#                                  FROM tbl_aset 
-#                                  WHERE user_id = ?'''
-#             params_aset = [session['user_id']]
-
-#             if start_date and end_date:
-#                 query_aset += ' AND purchase_date BETWEEN ? AND ?'
-#                 params_aset.extend([start_date, end_date])
-
-#             cursor.execute(query_aset, params_aset)
-#             aset_data = cursor.fetchall()
-
-#             # Calculate total aset
-#             total_aset = sum(aset[5] for aset in aset_data)
-
-#             # Format aset data
-
-#             formatted_aset_data = []
-#             for aset in aset_data:
-#                 formatted_date = aset[6].strftime('%d-%m-%Y')
-#                 formatted_amount = f"Rp. {int(aset[5]):,}".replace(',', '.')
-#                 formatted_aset_data.append((aset[0], aset[1], aset[2], aset[3], aset[4], formatted_amount, formatted_date, aset[7]))
-            
-#             # Format total amounts
-#             formatted_total_aset = f"Rp. {int(total_aset):,}".replace(',', '.')
-
-#             conn.close()
-
-#             # Render both pemasukan and pengeluaran data in the template
-#             return render_template('aset.html', 
-#                                    aset_data=formatted_aset_data, 
-#                                    total_aset=formatted_total_aset,
-#                                    start_date=start_date, 
-#                                    end_date=end_date, 
-#                                    username=username)
-#         except Exception as e:
-#             flash(f'Error retrieving transactions: {e}', 'danger')
-#             return redirect(url_for('home'))
-#     else:
-#         flash('You need to login first!', 'danger')
-#         return redirect(url_for('login'))
 
 
 # Transaksi Pengeluaran
@@ -698,6 +889,107 @@ def delete_pengeluaran(id):
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+
+#=======================================================================================================
+#=======================================================================================================
+# @app.route('/tabungan_mandiri')
+# def tabungan_mandiri():
+#     if 'username' in session:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute('SELECT id, amount, description, created_at FROM tabungan_mandiri WHERE user_id = ?', (session['user_id'],))
+#         tabungan_data = cursor.fetchall()
+#         conn.close()
+#         return render_template('tabungan_mandiri.html', tabungan_data=tabungan_data)
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+# @app.route('/add_tabungan_mandiri', methods=['POST'])
+# def add_tabungan_mandiri():
+#     if 'username' in session:
+#         amount = request.form['amount']
+#         description = request.form['description']
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute("""
+#                 INSERT INTO tabungan_mandiri (amount, description, user_id, created_at)
+#                 VALUES (?, ?, ?, GETDATE())
+#             """, (amount, description, session['user_id']))
+#             conn.commit()
+#             cursor.close()
+#             flash('Tabungan Mandiri berhasil ditambahkan!', 'success')
+#         except Exception as e:
+#             flash(f'Error: {e}', 'danger')
+#         finally:
+#             conn.close()
+#         return redirect(url_for('tabungan_mandiri'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+# @app.route('/edit_tabungan_mandiri/<int:id>', methods=['GET'])
+# def edit_tabungan_mandiri(id):
+#     if 'username' in session:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute('SELECT id, amount, description FROM tabungan_mandiri WHERE id = ?', (id,))
+#         tabungan = cursor.fetchone()
+#         conn.close()
+#         if tabungan:
+#             return render_template('edit_tabungan_mandiri.html', tabungan=tabungan)
+#         else:
+#             flash('Tabungan Mandiri not found!', 'danger')
+#             return redirect(url_for('tabungan_mandiri'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+# @app.route('/update_tabungan_mandiri/<int:id>', methods=['POST'])
+# def update_tabungan_mandiri(id):
+#     if 'username' in session:
+#         amount = request.form['amount']
+#         description = request.form['description']
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute("""
+#                 UPDATE tabungan_mandiri
+#                 SET amount = ?, description = ?
+#                 WHERE id = ?
+#             """, (amount, description, id))
+#             conn.commit()
+#             cursor.close()
+#             flash('Tabungan Mandiri updated successfully!', 'success')
+#         except Exception as e:
+#             flash(f'Error: {e}', 'danger')
+#         finally:
+#             conn.close()
+#         return redirect(url_for('tabungan_mandiri'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
+# @app.route('/delete_tabungan_mandiri/<int:id>', methods=['POST'])
+# def delete_tabungan_mandiri(id):
+#     if 'username' in session:
+#         try:
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+#             cursor.execute('DELETE FROM tabungan_mandiri WHERE id = ?', (id,))
+#             conn.commit()
+#             cursor.close()
+#             flash('Tabungan Mandiri deleted successfully!', 'success')
+#         except Exception as e:
+#             flash(f'Error: {e}', 'danger')
+#         finally:
+#             conn.close()
+#         return redirect(url_for('tabungan_mandiri'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+    
 
 #=======================================================================================================
 #route for register

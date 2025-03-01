@@ -312,6 +312,16 @@ http://127.0.0.1:5000
 didalam bukukas
 
 - aset
+    - Asset ID: Identifier unik untuk setiap aset.
+    - Asset Name: Nama atau deskripsi aset.
+    - Category: Kategori atau jenis aset (misalnya, properti, kendaraan, peralatan).
+    - Purchase Date: Tanggal pembelian aset.
+    - Purchase Price: Harga pembelian aset.
+    - Owner: Pemilik atau pengguna yang bertanggung jawab atas aset.
+    - Notes: Catatan tambahan yang mungkin diperlukan.
+
+
+
 - pemasukan pengeluaran
 - hutang
 - cicilan
