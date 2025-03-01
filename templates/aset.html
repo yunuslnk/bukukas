@@ -159,6 +159,25 @@
                                 No Gambar Aset
                                 {% endif %}
                             </td>
+                            <td>
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Action</a>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="{{ url_for('edit_aset', id=aset[0]) }}">Edit</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form action="{{ url_for('delete_aset', id=aset[0]) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete()">
+                                                    <button type="submit" class="dropdown-item">Delete</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </td>
+
+
+
                         </tr>
                         {% endfor %}
                     </tbody>

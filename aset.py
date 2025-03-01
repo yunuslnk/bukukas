@@ -88,11 +88,6 @@ def aset():
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
-
-
-#            query_aset = '''SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image
-#            amount, description, user_id, created_at, bukti_transfer)
-
 # @app.route('/add_aset', methods=['POST'])
 def add_aset():
     if 'username' in session:
@@ -130,13 +125,6 @@ def add_aset():
             conn = get_db_connection()
             cursor = conn.cursor()
             
-            #SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image
-            # Insert the income (pemasukan) data with image filename (if uploaded)
-
-            #             cursor.execute("""
-            #     INSERT INTO pemasukan2 (amount, description, user_id, created_at, bukti_transfer)
-            #     VALUES (?, ?, ?, ?, ?)
-            # """, (amount, description, session['user_id'], created_at, filename))
 
             cursor.execute("""
                 INSERT INTO tbl_aset (asset_name, description, owner, category, price, purchase_date, user_id, asset_image)
@@ -156,3 +144,124 @@ def add_aset():
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
 
+# 
+#@app.route('/edit_aset/<int:id>', methods=['GET', 'POST'])
+def edit_aset(id):
+    if 'username' in session:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        if request.method == 'POST':
+            # Ensure 'created_at' exists in the request form
+            if 'purchase_date' not in request.form:
+                flash('Tanggal aset tidak tersedia!', 'danger')
+                return redirect(url_for('edit_aset', id=id))
+               
+            asset_name = request.form['asset_name']
+            description = request.form['description']
+            owner = request.form['owner']
+            category = request.form['category']
+            price = request.form['price']
+            purchase_date = request.form['purchase_date']
+
+            # Handle file upload for 'bukti_transfer'
+            file = request.files.get('asset_image')
+            asset_image_filename = None
+
+            if file and allowed_file(file.filename):
+                # Secure the filename
+                filename = secure_filename(file.filename)
+                # Save the file to the uploads folder
+                file.save(os.path.join(UPLOAD_FOLDER, filename))
+                asset_image_filename = filename  # Store the filename to update in DB
+
+            if asset_image_filename:
+                cursor.execute('UPDATE tbl_aset SET asset_name = ?, description = ?, owner = ?, category = ?, price = ?, purchase_date = ?, asset_image = ? WHERE id = ?',
+                               (asset_name, description, owner, category, price, purchase_date, asset_image_filename, id))
+            else:
+                cursor.execute('UPDATE tbl_aset SET asset_name = ?, description = ?, owner = ?, category = ?, price = ?, purchase_date = ? WHERE id = ?',
+                               (asset_name, description, owner, category, price, purchase_date, id))
+            conn.commit()
+            conn.close()
+
+            flash('Aset updated successfully!', 'success')
+            return redirect(url_for('aset', show_collapse=True))
+        else:
+            cursor.execute('SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image FROM tbl_aset WHERE id = ?', (id,))
+            pemasukan = cursor.fetchone()
+            conn.close()
+
+            if aset:
+                formatted_aset = (pemasukan[0], pemasukan[1], pemasukan[2], pemasukan[3], pemasukan[4], pemasukan[5], pemasukan[6], pemasukan[7])
+                return render_template('edit_aset.html', aset=formatted_aset)
+            else:
+                flash('Aset not found!', 'danger')
+                return redirect(url_for('aset', show_collapse=True))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
+
+
+def update_aset(id):
+    if 'username' in session:
+        asset_name = request.form['asset_name']
+        description = request.form['description']
+        owner = request.form['owner']
+        category = request.form['category']
+        price = request.form['price']
+        purchase_date = request.form['purchase_date']
+
+        # Validate date format (assuming YYYY-MM-DD format for SQL Server)
+        try:
+            datetime.strptime(purchase_date, '%Y-%m-%d')
+        except ValueError:
+            flash('Invalid date format! Use YYYY-MM-DD.', 'danger')
+            return redirect(url_for('aset'))
+
+        # Validate and round the price
+        try:
+            price = round(float(price), 2)
+        except ValueError:
+            flash('Invalid amount format!', 'danger')
+            return redirect(url_for('aset'))
+
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE tbl_aset
+                SET asset_name = ?, description = ?, owner = ?, category = ?, price = ?, purchase_date = ?
+                WHERE id = ?
+            """, (asset_name, description, owner, category, price, purchase_date, id))
+            conn.commit()
+            cursor.close()
+            flash('Aset updated successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('aset', show_collapse=True))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))
+
+
+
+def delete_aset(id):
+    if 'username' in session:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM tbl_aset WHERE id = ?', (id,))
+            conn.commit()
+            cursor.close()
+            flash('Aset deleted successfully!', 'success')
+        except Exception as e:
+            flash(f'Error: {e}', 'danger')
+        finally:
+            conn.close()
+        return redirect(url_for('aset', show_collapse=True ))
+    else:
+        flash('You need to login first!', 'danger')
+        return redirect(url_for('login'))

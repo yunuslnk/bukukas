@@ -13,6 +13,9 @@ from template import show_template  # Impor fungsi dari file template.py
 from aset import aset
 from aset import allowed_file
 from aset import add_aset
+from aset import update_aset
+from aset import delete_aset
+from aset import edit_aset
 
 
 # Helper function to check allowed file types
@@ -30,7 +33,9 @@ db = SQLAlchemy(app)
 app.add_url_rule('/template', 'show_template', show_template)
 app.add_url_rule('/aset', 'aset', aset, methods=['GET'])
 app.add_url_rule('/add_aset', 'add_aset', add_aset, methods=['POST'])
-
+app.add_url_rule('/edit_aset/<int:id>', 'edit_aset', edit_aset, methods=['GET', 'POST'])
+app.add_url_rule('/update_aset/<int:id>', 'update_aset', update_aset, methods=['POST'])
+app.add_url_rule('/delete_aset/<int:id>', 'delete_aset', delete_aset, methods=['POST'])
 
 
 # Set the folder for uploaded files
@@ -194,71 +199,6 @@ def transaksipemasukan():
         return redirect(url_for('login'))
 
 
-
-# Transaksi Aset v2
-# @app.route('/aset', methods=['GET'])
-# def aset():
-#     if 'username' in session and session['role'] in ['admin', 'user']:
-#         try:
-#             username = session['username']
-#             conn = get_db_connection()
-#             cursor = conn.cursor()
-
-#             # Get today's date
-#             today = datetime.today()
-
-#             # Default for current month (first and last day)
-#             first_day_of_month = today.replace(day=1)
-#             last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-
-#             # Get start and end dates from query parameters or use defaults
-#             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
-#             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
-            
-        
-
-#             # Fetch Aset data
-#             query_aset = '''SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image 
-#                                  FROM tbl_aset 
-#                                  WHERE user_id = ?'''
-#             params_aset = [session['user_id']]
-
-#             if start_date and end_date:
-#                 query_aset += ' AND purchase_date BETWEEN ? AND ?'
-#                 params_aset.extend([start_date, end_date])
-
-#             cursor.execute(query_aset, params_aset)
-#             aset_data = cursor.fetchall()
-
-#             # Calculate total aset
-#             total_aset = sum(aset[5] for aset in aset_data)
-
-#             # Format aset data
-
-#             formatted_aset_data = []
-#             for aset in aset_data:
-#                 formatted_date = aset[6].strftime('%d-%m-%Y')
-#                 formatted_amount = f"Rp. {int(aset[5]):,}".replace(',', '.')
-#                 formatted_aset_data.append((aset[0], aset[1], aset[2], aset[3], aset[4], formatted_amount, formatted_date, aset[7]))
-            
-#             # Format total amounts
-#             formatted_total_aset = f"Rp. {int(total_aset):,}".replace(',', '.')
-
-#             conn.close()
-
-#             # Render both pemasukan and pengeluaran data in the template
-#             return render_template('aset.html', 
-#                                    aset_data=formatted_aset_data, 
-#                                    total_aset=formatted_total_aset,
-#                                    start_date=start_date, 
-#                                    end_date=end_date, 
-#                                    username=username)
-#         except Exception as e:
-#             flash(f'Error retrieving transactions: {e}', 'danger')
-#             return redirect(url_for('home'))
-#     else:
-#         flash('You need to login first!', 'danger')
-#         return redirect(url_for('login'))
 
 
 # Transaksi Pengeluaran
