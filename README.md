@@ -334,3 +334,20 @@ didalam bukukas
 
 
 
+
+
+
+deployment
+
+
+- register aws
+- register gitlab
+- push to gitlab
+- cicd gitlab
+- deploy to aws
+
+
+
+
+
+

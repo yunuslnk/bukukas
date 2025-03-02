@@ -10,13 +10,13 @@ from datetime import datetime, timedelta # timedelta: Durasi waktu.
 import os # os: Modul untuk berinteraksi dengan sistem operasi.
 from werkzeug.utils import secure_filename # secure_filename: Mengamankan nama file.
 from template import show_template  # Impor fungsi dari file template.py
-from aset import aset
-from aset import allowed_file
-from aset import add_aset
-from aset import update_aset
-from aset import delete_aset
-from aset import edit_aset
-
+from aset import aset, allowed_file, add_aset, update_aset, delete_aset, edit_aset  # Impor fungsi dari file aset.py
+# from aset import allowed_file
+# from aset import add_aset
+# from aset import update_aset
+# from aset import delete_aset
+# from aset import edit_aset
+ 
 
 # Helper function to check allowed file types
 def allowed_file(filename):
