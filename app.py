@@ -10,7 +10,7 @@ from datetime import datetime, timedelta # timedelta: Durasi waktu.
 import os # os: Modul untuk berinteraksi dengan sistem operasi.
 from werkzeug.utils import secure_filename # secure_filename: Mengamankan nama file.
 from template import show_template  # Impor fungsi dari file template.py
-from aset import aset, allowed_file, add_aset, update_aset, delete_aset, edit_aset  # Impor fungsi dari file aset.py
+from aset import aset, allowed_file, add_aset, update_aset, delete_aset, edit_aset, calculate_total_pages  # Impor fungsi dari file aset.py
 from user import login, home, logout  # Impor fungsi dari file user.py
 
 

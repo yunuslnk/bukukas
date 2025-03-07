@@ -15,6 +15,8 @@ from template import show_template  # Impor fungsi dari file template.py
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def calculate_total_pages(total_items, items_per_page):
+    return (total_items + items_per_page - 1) // items_per_page
 
 # Set the folder for uploaded files
 UPLOAD_FOLDER = 'static/uploads'
@@ -23,8 +25,72 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
+
 # Transaksi Aset
 #@app.route('/aset', methods=['GET'])
+# def aset():
+#     if 'username' in session and session['role'] in ['admin', 'user']:
+#         try:
+#             username = session['username']
+#             conn = get_db_connection()
+#             cursor = conn.cursor()
+
+#             # Get today's date
+#             today = datetime.today()
+
+#             # Default for current month (first and last day)
+#             first_day_of_month = today.replace(day=1)
+#             last_day_of_month = (first_day_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+#             # Get start and end dates from query parameters or use defaults
+#             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
+#             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
+            
+        
+
+#             # Fetch Aset data
+#             query_aset = '''SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image 
+#                                  FROM tbl_aset 
+#                                  WHERE user_id = ?'''
+#             params_aset = [session['user_id']]
+
+#             if start_date and end_date:
+#                 query_aset += ' AND purchase_date BETWEEN ? AND ?'
+#                 params_aset.extend([start_date, end_date])
+
+#             cursor.execute(query_aset, params_aset)
+#             aset_data = cursor.fetchall()
+
+#             # Calculate total aset
+#             total_aset = sum(aset[5] for aset in aset_data)
+
+#             # Format aset data
+
+#             formatted_aset_data = []
+#             for aset in aset_data:
+#                 formatted_date = aset[6].strftime('%d-%m-%Y')
+#                 formatted_amount = f"Rp. {int(aset[5]):,}".replace(',', '.')
+#                 formatted_aset_data.append((aset[0], aset[1], aset[2], aset[3], aset[4], formatted_amount, formatted_date, aset[7]))
+            
+#             # Format total amounts
+#             formatted_total_aset = f"Rp. {int(total_aset):,}".replace(',', '.')
+
+#             conn.close()
+
+#             # Render both pemasukan and pengeluaran data in the template
+#             return render_template('aset.html', 
+#                                    aset_data=formatted_aset_data, 
+#                                    total_aset=formatted_total_aset,
+#                                    start_date=start_date, 
+#                                    end_date=end_date, 
+#                                    username=username)
+#         except Exception as e:
+#             flash(f'Error retrieving transactions: {e}', 'danger')
+#             return redirect(url_for('home'))
+#     else:
+#         flash('You need to login first!', 'danger')
+#         return redirect(url_for('login'))
+
 def aset():
     if 'username' in session and session['role'] in ['admin', 'user']:
         try:
@@ -42,27 +108,34 @@ def aset():
             # Get start and end dates from query parameters or use defaults
             start_date = request.args.get('start_date', first_day_of_month.strftime('%Y-%m-%d'))
             end_date = request.args.get('end_date', last_day_of_month.strftime('%Y-%m-%d'))
-            
-        
 
-            # Fetch Aset data
-            query_aset = '''SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image 
-                                 FROM tbl_aset 
-                                 WHERE user_id = ?'''
-            params_aset = [session['user_id']]
+            # Get page number and items per page
+            page = request.args.get('page', 1, type=int)
+            per_page = request.args.get('per_page', 10, type=int)
+            offset = (page - 1) * per_page
 
-            if start_date and end_date:
-                query_aset += ' AND purchase_date BETWEEN ? AND ?'
-                params_aset.extend([start_date, end_date])
+            # Fetch total number of aset
+            query_count = '''
+                SELECT COUNT(*) FROM tbl_aset WHERE user_id = ? AND purchase_date BETWEEN ? AND ?
+            '''
+            cursor.execute(query_count, (session['user_id'], start_date, end_date))
+            total_items = cursor.fetchone()[0]
+            total_pages = calculate_total_pages(total_items, per_page)
 
-            cursor.execute(query_aset, params_aset)
+            # Fetch Aset data with paging
+            query_aset = '''
+                SELECT id, asset_name, description, owner, category, price, purchase_date, asset_image 
+                FROM tbl_aset 
+                WHERE user_id = ? AND purchase_date BETWEEN ? AND ?
+                LIMIT ? OFFSET ?
+            '''
+            cursor.execute(query_aset, (session['user_id'], start_date, end_date, per_page, offset))
             aset_data = cursor.fetchall()
 
             # Calculate total aset
             total_aset = sum(aset[5] for aset in aset_data)
 
             # Format aset data
-
             formatted_aset_data = []
             for aset in aset_data:
                 formatted_date = aset[6].strftime('%d-%m-%Y')
@@ -72,6 +145,8 @@ def aset():
             # Format total amounts
             formatted_total_aset = f"Rp. {int(total_aset):,}".replace(',', '.')
 
+
+
             conn.close()
 
             # Render both pemasukan and pengeluaran data in the template
@@ -80,13 +155,22 @@ def aset():
                                    total_aset=formatted_total_aset,
                                    start_date=start_date, 
                                    end_date=end_date, 
-                                   username=username)
+                                   username=username,
+                                   page=page,
+                                   total_pages=total_pages)
         except Exception as e:
             flash(f'Error retrieving transactions: {e}', 'danger')
             return redirect(url_for('home'))
     else:
         flash('You need to login first!', 'danger')
         return redirect(url_for('login'))
+
+
+
+
+
+
+
 
 # @app.route('/add_aset', methods=['POST'])
 def add_aset():
